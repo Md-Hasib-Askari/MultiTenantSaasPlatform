@@ -1,0 +1,71 @@
+# MTSP local infrastructure.
+# Scope: PostgreSQL 16 (alpine) + pgAdmin 4 viewer + Redis 7 (alpine).
+# api / prometheus / grafana (per DESIGN-DOC §12.1) can be added here later.
+#
+#   docker compose -f docker/docker-compose.yml up -d
+#
+# Postgres  -> localhost:5432  (db/user/pass default to "mtsp")
+# pgAdmin   -> http://localhost:8081  (login admin@mtsp.dev / admin)
+# Redis     -> localhost:6379  (maxmemory 256mb, allkeys-lru)
+
+name: mtsp
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mtsp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mtsp}
+      POSTGRES_USER: ${POSTGRES_USER:-mtsp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mtsp}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mtsp} -d ${POSTGRES_DB:-mtsp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: mtsp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  pgadmin:
+    image: dpage/pgadmin4:8.14
+    container_name: mtsp-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@mtsp.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"            # skip per-user login flow for local dev
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "8081:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      # Auto-register the postgres server so it appears in the tree on first launch.
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  pgadmin:
+  redisdata:

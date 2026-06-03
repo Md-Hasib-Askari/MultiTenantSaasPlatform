@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "MTSP Postgres",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "mtsp",
+      "Username": "mtsp",
+      "SSLMode": "prefer",
+      "Comment": "Local MTSP dev database (docker compose service: postgres)"
+    }
+  }
+}
