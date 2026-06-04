@@ -2,7 +2,7 @@ namespace Domain.Enums;
 
 public enum PlanTier
 {
-    FREE = 0,
-    PRO = 1,
-    ENTERPRISE = 2,
+    Free = 0,
+    Pro = 1,
+    Enterprise = 2,
 }

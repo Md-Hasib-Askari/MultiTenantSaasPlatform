@@ -2,7 +2,7 @@ namespace Domain.Enums;
 
 public enum TenantStatus
 {
-    ACTIVE = 0,
-    SUSPENDED = 1,
-    DELETED = 2,
+    Active = 0,
+    Suspended = 1,
+    Deleted = 2,
 }
