@@ -16,9 +16,9 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder
-            .Entity<Tenant>()
-            .HasMany(p => p.Projects)
-            .WithOne(t => t.Tenant)
+            .Entity<Project>()
+            .HasOne(p => p.Tenant)
+            .WithMany(t => t.Projects)
             .HasForeignKey(p => p.TenantId);
     }
 }
