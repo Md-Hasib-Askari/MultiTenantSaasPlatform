@@ -21,13 +21,14 @@ public class Tenant : BaseAudit
     public string BillingEmail { get; private set; } = null!;
     public TenantSettings Settings { get; private set; } = null!;
 
-    public ICollection<Project> Projects { get; private set; } = new List<Project>();
+    public ICollection<Project> Projects { get; private set; } = [];
+    public ICollection<User> Users { get; private set; } = [];
 
     private Tenant() { }
 
     public static Tenant Create(string slug, string name, PlanTier plan = PlanTier.Free) =>
         // TODO: guard inputs, set Id, CreatedAt, Status = Active, etc.
-        new Tenant
+        new()
         {
             Id = Guid.NewGuid(),
             Slug = slug,

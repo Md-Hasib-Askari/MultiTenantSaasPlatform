@@ -14,7 +14,7 @@ public class Project : BaseAudit, ITenantScoped
     private Project() { }
 
     public static Project Create(Guid tenantId, string name) =>
-        new Project
+        new()
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
