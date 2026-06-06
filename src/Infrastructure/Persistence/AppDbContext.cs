@@ -1,4 +1,6 @@
 using Domain.Entities;
+using infrastructure.Persistence.Configurations;
+using Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
@@ -12,12 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder
-            .Entity<Project>()
-            .HasOne(p => p.Tenant)
-            .WithMany(t => t.Projects)
-            .HasForeignKey(p => p.TenantId);
+        modelBuilder.ApplyConfiguration(new TenantConfiguration());
+        modelBuilder.ApplyConfiguration(new ProjectConfiguration());
 
         modelBuilder
             .Entity<User>()
