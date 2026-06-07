@@ -13,7 +13,7 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.HasKey(t => t.Id);
 
         builder.HasIndex(t => t.Slug).IsUnique();
-        builder.Property(t => t.Slug).IsRequired().HasMaxLength(100);
+        builder.Property(t => t.Slug).IsRequired().HasMaxLength(63);
         builder.Property(t => t.Name).IsRequired().HasMaxLength(200);
         builder.Property(t => t.BillingEmail).IsRequired().HasMaxLength(200);
 
@@ -30,8 +30,6 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             s =>
             {
                 s.ToJson();
-                s.Property(x => x.TimeZone).HasDefaultValue("UTC");
-                s.Property(x => x.DateFormat).HasDefaultValue("yyyy-MM-dd");
             }
         );
     }

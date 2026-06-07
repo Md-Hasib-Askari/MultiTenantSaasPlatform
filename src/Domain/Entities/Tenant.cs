@@ -26,21 +26,30 @@ public class Tenant : BaseAudit
 
     private Tenant() { }
 
-    public static Tenant Create(string slug, string name, PlanTier plan = PlanTier.Free) =>
-        // TODO: guard inputs, set Id, CreatedAt, Status = Active, etc.
-        new()
+    public static Tenant Create(string slug, string name, PlanTier plan = PlanTier.Free)
+    {
+        // Validations
+        if (string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Slug cannot be empty.", nameof(slug));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty.", nameof(name));
+
+        var tenant = new Tenant()
         {
             Id = Guid.NewGuid(),
             Slug = slug,
             Name = name,
             Plan = plan,
-            PlanExpiresAt = DateTimeOffset.UtcNow.AddMonths(1), // default to 1 month trial for paid plans
+            PlanExpiresAt = null,
             Status = TenantStatus.Active,
             IsolationMode = IsolationMode.Shared, // default isolation mode
             BillingEmail = string.Empty, // default empty, can be updated later
             CreatedAt = DateTimeOffset.UtcNow,
             Settings = new TenantSettings(),
         };
+
+        return tenant;
+    }
 
     public void ToggleSuspend()
     {
