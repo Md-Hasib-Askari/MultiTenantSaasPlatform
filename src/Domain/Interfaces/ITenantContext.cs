@@ -7,4 +7,5 @@ public interface ITenantContext
     Guid TenantId { get; }
     string TenantSlug { get; }
     PlanTier TenantPlan { get; }
+    bool IsResolved { get; }
 }

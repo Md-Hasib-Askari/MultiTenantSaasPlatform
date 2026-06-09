@@ -1,4 +1,6 @@
+using Domain.Interfaces;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,10 +13,17 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 // Database Configuration
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options
-        .UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
-        .UseSnakeCaseNamingConvention()
+builder.Services.AddSingleton<ITenantContext, StubTenantContext>();
+builder.Services.AddDbContext<AppDbContext>(
+    (sp, options) =>
+    {
+        var tenantContext = sp.GetRequiredService<ITenantContext>();
+
+        options
+            .UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+            .UseSnakeCaseNamingConvention()
+            .AddInterceptors(new RlsConnectionInterceptor(tenantContext));
+    }
 );
 
 var app = builder.Build();
