@@ -14,12 +14,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<Project> Projects { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<ApiKey> ApiKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new TenantConfiguration());
         modelBuilder.ApplyConfiguration(new ProjectConfiguration());
+        modelBuilder.ApplyConfiguration(new ApiKeyConfiguration());
 
         modelBuilder
             .Entity<User>()
