@@ -26,9 +26,17 @@ public class JwtTokenService : ITokenService
     public JwtTokenService(IOptions<JwtOptions> opts)
     {
         _opts = opts.Value;
-        var rsa = RSA.Create();
-        rsa.ImportFromPem(_opts.PrivateKey);
-        _signingKey = new RsaSecurityKey(rsa);
+        if (!string.IsNullOrEmpty(_opts.PrivateKey))
+        {
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(_opts.PrivateKey);
+            _signingKey = new RsaSecurityKey(rsa);
+        }
+        else
+        {
+            // Development: auto-generated RSA key
+            _signingKey = new RsaSecurityKey(RSA.Create(2048));
+        }
     }
 
     public (string AccessToken, string RefreshToken) CreateTokenPair(

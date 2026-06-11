@@ -1,17 +1,62 @@
+using System.Security.Cryptography;
 using Api.Middleware;
 using Application.Common;
+using Domain.Entities;
 using Domain.Interfaces;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Tenants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ASP.NET Identity
+builder
+    .Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
+// JWT Authentication
+builder.Services.AddOptions<JwtOptions>().Bind(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddSingleton<ApiKeyService>();
+
+var jwtOpts = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()!;
+var rsa = RSA.Create(2048);
+if (!string.IsNullOrEmpty(jwtOpts.PrivateKey))
+    rsa.ImportFromPem(jwtOpts.PrivateKey);
+
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOpts.Issuer,
+            ValidAudience = jwtOpts.Audience,
+            IssuerSigningKey = new RsaSecurityKey(rsa),
+        };
+    });
+
+// Add services to the container.
 builder.Services.AddControllers();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -58,6 +103,7 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
