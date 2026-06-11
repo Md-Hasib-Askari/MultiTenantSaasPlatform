@@ -14,7 +14,23 @@ public class ApiKey : BaseAudit, ITenantScoped
     public DateTimeOffset? LastUsedAt { get; private set; }
     public DateTimeOffset? ExpiresAt { get; private set; }
 
-    public Tenant Tenant { get; set; } = null!;
+    public Tenant Tenant { get; private set; } = null!;
 
     private ApiKey() { }
+
+    public static ApiKey Create(
+        Guid tenantId,
+        string name,
+        string keyHash,
+        string keyPrefix,
+        int? expiryDays
+    ) =>
+        new()
+        {
+            TenantId = tenantId,
+            Name = name,
+            KeyHash = keyHash,
+            KeyPrefix = keyPrefix,
+            ExpiresAt = expiryDays is int days ? DateTimeOffset.UtcNow.AddDays(days) : null,
+        };
 }
