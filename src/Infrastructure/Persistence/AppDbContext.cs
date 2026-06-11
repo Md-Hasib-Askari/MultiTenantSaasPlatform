@@ -3,31 +3,30 @@ using Domain.Entities;
 using Domain.Interfaces;
 using infrastructure.Persistence.Configurations;
 using Infrastructure.Persistence.Configurations;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext tenantContext)
-    : DbContext(options)
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
 {
     private readonly ITenantContext _itenantContext = tenantContext;
     public DbSet<Tenant> Tenants { get; set; } = null!;
+    public DbSet<UserTenantRole> UserTenantRoles { get; set; } = null!;
+    public DbSet<Invitaiton> Invitaitons { get; set; } = null!;
     public DbSet<Project> Projects { get; set; } = null!;
-    public DbSet<User> Users { get; set; } = null!;
     public DbSet<ApiKey> ApiKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new TenantConfiguration());
+        modelBuilder.ApplyConfiguration(new UserTenantRoleConfiguration());
+        modelBuilder.ApplyConfiguration(new InvitationConfiguration());
         modelBuilder.ApplyConfiguration(new ProjectConfiguration());
         modelBuilder.ApplyConfiguration(new ApiKeyConfiguration());
-
-        modelBuilder
-            .Entity<User>()
-            .HasOne(u => u.Tenant)
-            .WithMany(t => t.Users)
-            .HasForeignKey(u => u.TenantId);
 
         ApplyTenantQueryFilters(modelBuilder);
     }
