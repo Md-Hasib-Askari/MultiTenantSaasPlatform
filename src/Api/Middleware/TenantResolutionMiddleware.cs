@@ -1,3 +1,7 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
 using Infrastructure.Tenants;
@@ -35,18 +39,14 @@ public class TenantResolutionMiddleware(
         var host = ctx.Request.Host.Host;
         var parts = host.Split('.');
         if (parts.Length >= 3 && parts[0] != "www")
-        {
-            // fetch by slud
-        }
+            tenant = await TryBySlugAsync(parts[0], tenantRepo, redis);
 
         // Strategy 2: JWT clain (tenant_id claim in Bearer token)
         if (tenant is null)
         {
-            var claim = ctx.User.FindFirst("tenant_id").Value;
+            var claim = ctx.User.FindFirst("tenant_id")?.Value;
             if (Guid.TryParse(claim, out var tid))
-            {
-                // fetch by id
-            }
+                tenant = await TryByIdAsync(tid, tenantRepo, redis);
         }
 
         // Strategy 3: API key header (X-API-Key)
@@ -54,9 +54,7 @@ public class TenantResolutionMiddleware(
         {
             var key = ctx.Request.Headers["X-API-Key"].FirstOrDefault();
             if (!string.IsNullOrEmpty(key))
-            {
-                // try by api key
-            }
+                tenant = await TryByApiKeyAsync(key, tenantRepo);
         }
 
         // Strategy 4: Query param (dev only) eg. /?tenant=acme
@@ -64,9 +62,7 @@ public class TenantResolutionMiddleware(
         {
             var slug = ctx.Request.Query["tenant"].FirstOrDefault();
             if (!string.IsNullOrEmpty(slug))
-            {
-                // fetch by slug
-            }
+                tenant = await TryBySlugAsync(slug, tenantRepo, redis);
         }
 
         if (tenant is null)
@@ -99,4 +95,66 @@ public class TenantResolutionMiddleware(
 
         await _next(ctx);
     }
+
+    private static async Task<TenantInfo?> TryBySlugAsync(
+        string slug,
+        ITenantRepository tenantRepo,
+        IConnectionMultiplexer redis
+    )
+    {
+        var db = redis.GetDatabase();
+        var key = $"tenant:{slug}";
+        var hit = await db.StringGetAsync(key);
+
+        if (hit.HasValue)
+            return JsonSerializer.Deserialize<TenantInfo>(hit.ToString());
+
+        var tenant = await tenantRepo.GetBySlugAsyc(slug);
+        if (tenant is null)
+            return null;
+
+        var info = Map(tenant);
+        var json = JsonSerializer.Serialize(info);
+        await db.StringSetAsync($"tenant:{tenant.Slug}", json, TimeSpan.FromMinutes(5));
+        await db.StringSetAsync($"tenant:it:{tenant.Id}", json, TimeSpan.FromMinutes(5));
+        return info;
+    }
+
+    private static async Task<TenantInfo?> TryByIdAsync(
+        Guid id,
+        ITenantRepository repo,
+        IConnectionMultiplexer redis
+    )
+    {
+        var db = redis.GetDatabase();
+        var key = $"tenant:id:{id}";
+        var hit = await db.StringGetAsync(key);
+
+        if (hit.HasValue)
+            return JsonSerializer.Deserialize<TenantInfo>(hit.ToString());
+
+        var tenant = await repo.GetByIdAsync(id);
+        if (tenant is null)
+            return null;
+
+        var info = Map(tenant);
+        var json = JsonSerializer.Serialize(info);
+        await db.StringSetAsync(key, json, TimeSpan.FromMinutes(5));
+        return info;
+    }
+
+    private static async Task<TenantInfo?> TryByApiKeyAsync(string rawKey, ITenantRepository repo)
+    {
+        var pepper = Convert.FromBase64String(
+            Environment.GetEnvironmentVariable("API_KEY_PEPPER")
+                ?? "QXBpS2V5UGVwcGVyU2VlZEZvckRldg=="
+        );
+        using var hmac = new HMACSHA256(pepper);
+        var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawKey)));
+        var tenant = await repo.GetByApiKeyHashAsync(hash);
+        return tenant is null ? null : Map(tenant);
+    }
+
+    private static TenantInfo Map(Tenant t) =>
+        new(t.Id, t.Slug, t.Name, t.Plan, t.Status, t.IsolationMode);
 }
