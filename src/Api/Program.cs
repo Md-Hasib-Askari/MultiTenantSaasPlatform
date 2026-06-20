@@ -1,5 +1,8 @@
+using System.Numerics;
 using System.Security.Cryptography;
+using Api.Authorization;
 using Api.Middleware;
+using Application.Auth;
 using Application.Common;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -9,7 +12,7 @@ using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Tenants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -33,7 +36,30 @@ builder
 // JWT Authentication
 builder.Services.AddOptions<JwtOptions>().Bind(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ApiKeyService>();
+
+// Authorization Policies
+builder
+    .Services.AddAuthorizationBuilder()
+    .AddPolicy(
+        "RequireTenantOwner",
+        policy => policy.Requirements.Add(new TenantRoleRequirement("Owner"))
+    )
+    .AddPolicy(
+        "RequireTenantAdmin",
+        policy => policy.Requirements.Add(new TenantRoleRequirement("Owner", "Admin"))
+    )
+    .AddPolicy(
+        "ResourceTenantMember",
+        policy => policy.Requirements.Add(new TenantMemberRequirement("Owner"))
+    )
+    .AddPolicy(
+        "ResourceTenantAdmin",
+        policy => policy.Requirements.Add(new TenantMemberRequirement("Owner", "Member"))
+    );
+builder.Services.AddSingleton<IAuthorizationHandler, TenantRoleHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, TenantMemberHandler>();
 
 var jwtOpts = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()!;
 var rsa = RSA.Create(2048);
