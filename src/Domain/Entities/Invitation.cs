@@ -13,7 +13,7 @@ public class Invitaiton : ITenantScoped, IAuditable
     public bool Accepted { get; private set; }
     public DateTimeOffset ExpiresAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset UpdatedAt { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
     public Tenant Tenant { get; private set; } = null!;
