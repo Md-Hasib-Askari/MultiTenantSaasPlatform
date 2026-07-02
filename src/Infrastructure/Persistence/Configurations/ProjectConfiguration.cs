@@ -1,5 +1,4 @@
-using Domain.Entities;
-using Domain.Entities.Project;
+using Domain.Entities.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

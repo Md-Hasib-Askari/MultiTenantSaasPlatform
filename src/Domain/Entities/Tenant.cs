@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Entities.Projects;
 using Domain.Enums;
 
 namespace Domain.Entities;
@@ -21,8 +22,8 @@ public class Tenant : BaseAudit
     public string BillingEmail { get; private set; } = null!;
     public TenantSettings Settings { get; private set; } = null!;
 
-    public ICollection<Project.Project> Projects { get; private set; } = [];
-    public ICollection<Project.ProjectMember> ProjectMembers { get; private set; } = [];
+    public ICollection<Project> Projects { get; private set; } = [];
+    public ICollection<ProjectMember> ProjectMembers { get; private set; } = [];
     public ICollection<UserTenantRole> UserRoles { get; private set; } = [];
     public ICollection<Invitaiton> Invitaitons { get; private set; } = [];
     public ICollection<ApiKey> ApiKeys { get; private set; } = [];

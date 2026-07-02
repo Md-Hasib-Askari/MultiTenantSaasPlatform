@@ -1,6 +1,6 @@
 using System.Reflection;
 using Domain.Entities;
-using Domain.Entities.Project;
+using Domain.Entities.Projects;
 using Domain.Interfaces;
 using infrastructure.Persistence.Configurations;
 using Infrastructure.Persistence.Configurations;

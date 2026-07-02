@@ -1,7 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Interfaces;
 
-namespace Domain.Entities.Project;
+namespace Domain.Entities.Projects;
 
 public class Project : BaseAudit, ITenantScoped
 {

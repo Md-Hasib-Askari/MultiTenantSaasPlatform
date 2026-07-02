@@ -1,5 +1,5 @@
 using Domain.Entities.Common;
-using Domain.Entities.Project;
+using Domain.Entities.Projects;
 using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Entities;

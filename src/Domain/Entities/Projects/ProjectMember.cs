@@ -1,6 +1,7 @@
+using System.Text.Json.Serialization;
 using Domain.Entities.Common;
 
-namespace Domain.Entities.Project;
+namespace Domain.Entities.Projects;
 
 public class ProjectMember : BaseAudit
 {
@@ -24,8 +25,19 @@ public class ProjectMember : BaseAudit
             UserId = userId,
             CreatedAt = DateTimeOffset.UtcNow,
         };
+
+    public static bool ChangeRole(ProjectMember member, ProjectMemberRole newRole)
+    {
+        if (member.Role != newRole)
+        {
+            member.Role = newRole;
+            return true;
+        }
+        return false;
+    }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ProjectMemberRole
 {
     Member,
