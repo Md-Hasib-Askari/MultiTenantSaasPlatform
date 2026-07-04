@@ -1,7 +1,1 @@
-namespace Domain.Enums;
-
-public enum IsolationMode
-{
-    Shared = 0,
-    Schema = 1,
-}
+// Removed — can be re-added later when schema isolation is needed

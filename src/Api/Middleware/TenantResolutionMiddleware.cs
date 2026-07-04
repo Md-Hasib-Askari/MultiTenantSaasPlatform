@@ -156,5 +156,5 @@ public class TenantResolutionMiddleware(
     }
 
     private static TenantInfo Map(Tenant t) =>
-        new(t.Id, t.Slug, t.Name, t.Plan, t.Status, t.IsolationMode);
+        new(t.Id, t.Slug, t.Name, t.Plan, t.Status);
 }

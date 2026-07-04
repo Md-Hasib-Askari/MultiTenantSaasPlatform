@@ -29,7 +29,6 @@ public class RedisCacheService(IConnectionMultiplexer redis) : ICacheService
             tenant.Name,
             tenant.Plan,
             tenant.Status,
-            tenant.IsolationMode,
             tenant.DeletedAt
         );
         var json = JsonSerializer.Serialize(info);

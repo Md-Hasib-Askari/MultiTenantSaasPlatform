@@ -19,11 +19,6 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 
         builder.Property(t => t.Plan).IsRequired().HasMaxLength(50).HasConversion<string>();
         builder.Property(t => t.Status).IsRequired().HasMaxLength(50).HasConversion<string>();
-        builder
-            .Property(t => t.IsolationMode)
-            .IsRequired()
-            .HasMaxLength(50)
-            .HasConversion<string>();
 
         builder.OwnsOne(
             t => t.Settings,

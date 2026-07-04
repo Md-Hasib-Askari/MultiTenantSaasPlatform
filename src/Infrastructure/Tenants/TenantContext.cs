@@ -28,6 +28,5 @@ public record TenantInfo(
     string Name,
     PlanTier Plan,
     TenantStatus Status,
-    IsolationMode IsolationMode,
     DateTimeOffset? DeletedAt = null
 );

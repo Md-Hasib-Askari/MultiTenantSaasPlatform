@@ -14,11 +14,10 @@ public class Tenant : BaseAudit
 {
     public Guid Id { get; private init; }
     public string Slug { get; private init; } = null!;
-    public string Name { get; private init; } = null!;
+    public string Name { get; private set; } = null!;
     public PlanTier Plan { get; private set; }
     public DateTimeOffset? PlanExpiresAt { get; private set; }
     public TenantStatus Status { get; private set; }
-    public IsolationMode IsolationMode { get; private set; }
     public string BillingEmail { get; private set; } = null!;
     public TenantSettings Settings { get; private set; } = null!;
 
@@ -46,7 +45,6 @@ public class Tenant : BaseAudit
             Plan = plan,
             PlanExpiresAt = null,
             Status = TenantStatus.Active,
-            IsolationMode = IsolationMode.Shared, // default isolation mode
             BillingEmail = string.Empty, // default empty, can be updated later
             CreatedAt = DateTimeOffset.UtcNow,
             Settings = new TenantSettings(),
@@ -61,15 +59,37 @@ public class Tenant : BaseAudit
         Status = Status == TenantStatus.Active ? TenantStatus.Suspended : TenantStatus.Active;
     }
 
-    public void ChangePlan(PlanTier newPlan, DateTimeOffset expiresAt)
+    public void ChangeSettings(TenantSettings newSettings)
     {
-        Plan = newPlan;
-        PlanExpiresAt = expiresAt;
+        Settings = newSettings;
     }
 
     public void MarkAsDeleted()
     {
         Status = TenantStatus.Deleted;
         DeletedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void Update(
+        string? name = null,
+        TenantStatus? tenantStatus = null,
+        PlanTier? newPlan = null,
+        string? billingEmail = null
+    )
+    {
+        if (!string.IsNullOrWhiteSpace(name))
+            Name = name;
+
+        if (tenantStatus is not null)
+            Status = tenantStatus.Value;
+
+        if (newPlan is not null)
+        {
+            Plan = newPlan.Value;
+            PlanExpiresAt = DateTimeOffset.UtcNow;
+        }
+
+        if (!string.IsNullOrWhiteSpace(billingEmail))
+            BillingEmail = billingEmail;
     }
 }
