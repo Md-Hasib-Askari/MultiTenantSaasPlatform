@@ -8,34 +8,27 @@ using Application.Projects.Interfaces;
 using Application.Projects.Services;
 using Application.Tenants.Interfaces;
 using Application.Tenants.Services;
+using Application.Users.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Projects;
+using Infrastructure.Seed;
 using Infrastructure.Tenants;
+using Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ASP.NET Identity
-builder
-    .Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-    {
-        options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireNonAlphanumeric = true;
-        options.User.RequireUniqueEmail = true;
-    })
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+// Password hasher (replaces Identity's built-in registration)
+builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
 // JWT Authentication
 builder.Services.AddOptions<JwtOptions>().Bind(builder.Configuration.GetSection("Jwt"));
@@ -87,7 +80,11 @@ builder
     });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -108,9 +105,15 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 
-// Respositories
+// Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IUserTenantRoleRepository, UserTenantRoleRepository>();
+
+// Seeder
+builder.Services.AddScoped<DataSeeder>();
 
 // Database Configuration
 // builder.Services.AddSingleton<ITenantContext, StubTenantContext>();
@@ -142,5 +145,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+if (args.Contains("--seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await seeder.SeedAsync();
+    return;
+}
 
 app.Run();

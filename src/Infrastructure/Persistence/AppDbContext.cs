@@ -3,18 +3,16 @@ using Domain.Entities;
 using Domain.Entities.Common;
 using Domain.Entities.Projects;
 using Domain.Interfaces;
-using infrastructure.Persistence.Configurations;
 using Infrastructure.Persistence.Configurations;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext tenantContext)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+    : DbContext(options)
 {
     private readonly ITenantContext _itenantContext = tenantContext;
+    public DbSet<ApplicationUser> Users { get; set; } = null!;
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<UserTenantRole> UserTenantRoles { get; set; } = null!;
     public DbSet<Invitaiton> Invitaitons { get; set; } = null!;
@@ -25,7 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new TenantConfiguration());
         modelBuilder.ApplyConfiguration(new UserTenantRoleConfiguration());
         modelBuilder.ApplyConfiguration(new InvitationConfiguration());

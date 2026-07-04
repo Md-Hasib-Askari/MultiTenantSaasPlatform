@@ -1,24 +1,30 @@
 using Application.Auth;
 using Application.Common;
 using Application.Tenants.Interfaces;
+using Application.Users.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Identity;
 
 public class AuthService(
-    UserManager<ApplicationUser> userManager,
+    IUserRepository userRepo,
+    IPasswordHasher<ApplicationUser> passwordHasher,
     ITokenService tokenService,
-    ITenantRepository tenantRepository,
+    ITenantService tenantService,
+    IRefreshTokenRepository refreshTokenRepo,
+    IUserTenantRoleRepository userTenantRoleRepo,
     AppDbContext db
 ) : IAuthService
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IUserRepository _userRepo = userRepo;
+    private readonly IPasswordHasher<ApplicationUser> _passwordHasher = passwordHasher;
     private readonly ITokenService _tokenService = tokenService;
-    private readonly ITenantRepository _tenantRepo = tenantRepository;
+    private readonly ITenantService _tenantService = tenantService;
+    private readonly IRefreshTokenRepository _refreshTokenRepo = refreshTokenRepo;
+    private readonly IUserTenantRoleRepository _userTenantRoleRepo = userTenantRoleRepo;
     private readonly AppDbContext _db = db;
 
     public async Task<TokenResponse> LoginAsync(
@@ -26,37 +32,29 @@ public class AuthService(
         CancellationToken ct = default
     )
     {
-        // Check if user is valid_
         var user =
-            await _userManager.FindByEmailAsync(request.Email)
+            await _userRepo.GetByEmailAsync(request.Email, ct)
             ?? throw new UnauthorizedAccessException("Invalid email or password.");
 
         if (!user.IsActive)
             throw new UnauthorizedAccessException("Account is not active.");
 
-        var valid = await _userManager.CheckPasswordAsync(user, request.Password);
-        if (!valid)
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        if (result is PasswordVerificationResult.Failed)
             throw new UnauthorizedAccessException("Invalid email or password.");
 
-        // Resolve user's primary tenant
         var tenant =
-            await _tenantRepo.GetByIdAsync(user.PrimaryTenantId, ct)
+            await _tenantService.GetByIdAsync(user.PrimaryTenantId, ct)
             ?? throw new InvalidOperationException("Primary Tenant not found.");
 
-        // Determine role for the token
-        var userRole = await _db.UserTenantRoles.FirstOrDefaultAsync(
-            r => r.UserId == user.Id && r.TenantId == tenant.Id,
-            ct
-        );
+        var userRole = await _userTenantRoleRepo.GetByUserAndTenantAsync(user.Id, tenant.Id, ct);
         var role = userRole?.Role ?? TenantRole.Member;
 
-        // Issue tokens
         var (accessToken, refreshToken) = _tokenService.CreateTokenPair(user, tenant, role);
 
-        // Store refresh token hash
         var tokenHash = _tokenService.HashToken(refreshToken);
         var refreshEntity = RefreshToken.Create(user.Id, tokenHash, expiryDays: 7);
-        _db.RefreshTokens.Add(refreshEntity);
+        await _refreshTokenRepo.AddAsync(refreshEntity, ct);
         await _db.SaveChangesAsync(ct);
 
         return new TokenResponse(accessToken, refreshToken);
@@ -67,16 +65,12 @@ public class AuthService(
         CancellationToken ct = default
     )
     {
-        // Check refresh token validity
         var tokenHash = _tokenService.HashToken(refreshToken);
 
-        var storedToken = await _db
-            .RefreshTokens.Include(r => r.User)
-            .FirstOrDefaultAsync(r => r.TokenHash == tokenHash, ct);
+        var storedToken = await _refreshTokenRepo.GetByHashWithUserAsync(tokenHash, ct);
         if (storedToken is null || !storedToken.IsActive)
             throw new UnauthorizedAccessException("Invalid or expired refresh token.");
 
-        // Revoke the old token
         storedToken.Revoke();
 
         var user = storedToken.User;
@@ -84,22 +78,17 @@ public class AuthService(
             throw new UnauthorizedAccessException("Account is not active.");
 
         var tenant =
-            await _tenantRepo.GetByIdAsync(user.PrimaryTenantId, ct)
+            await _tenantService.GetByIdAsync(user.PrimaryTenantId, ct)
             ?? throw new InvalidOperationException("Primary tenant not found.");
 
-        var userRole = await _db.UserTenantRoles.FirstOrDefaultAsync(
-            r => r.UserId == user.Id && r.TenantId == tenant.Id,
-            ct
-        );
+        var userRole = await _userTenantRoleRepo.GetByUserAndTenantAsync(user.Id, tenant.Id, ct);
         var role = userRole?.Role ?? TenantRole.Member;
 
-        // Issue new token pair
         var (accessToken, newRefreshToken) = _tokenService.CreateTokenPair(user, tenant, role);
 
-        // Store new refresh token hash
         var newTokenHash = _tokenService.HashToken(newRefreshToken);
         var newRefreshEntity = RefreshToken.Create(user.Id, newTokenHash, expiryDays: 7);
-        _db.RefreshTokens.Add(newRefreshEntity);
+        await _refreshTokenRepo.AddAsync(newRefreshEntity, ct);
         await _db.SaveChangesAsync(ct);
 
         return new TokenResponse(accessToken, newRefreshToken);
@@ -110,20 +99,17 @@ public class AuthService(
         CancellationToken ct = default
     )
     {
-        // Validate tenant exists and is active
         var tenant =
-            await _tenantRepo.GetBySlugAsync(request.TenantSlug, ct)
+            await _tenantService.GetBySlugAsync(request.TenantSlug, ct)
             ?? throw new InvalidOperationException("Tenant not found.");
 
         if (tenant.Status != TenantStatus.Active)
             throw new InvalidOperationException("Tenant is not active.");
 
-        // Check if user already exists
-        var existing = await _userManager.FindByEmailAsync(request.Email);
+        var existing = await _userRepo.GetByEmailAsync(request.Email, ct);
         if (existing is not null)
             throw new InvalidOperationException("A user with this email already exists.");
 
-        // Create user
         var user = ApplicationUser.Create(
             userName: request.Email,
             email: request.Email,
@@ -131,29 +117,22 @@ public class AuthService(
             primaryTenantId: tenant.Id
         );
 
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"User creation failed: {errors}");
-        }
+        user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
+        await _userRepo.AddAsync(user, ct);
 
-        // Assign Member role in the tenant
         var userTenantRole = UserTenantRole.Create(user.Id, tenant.Id, TenantRole.Member);
-        _db.UserTenantRoles.Add(userTenantRole);
+        await _userTenantRoleRepo.AddAsync(userTenantRole, ct);
         await _db.SaveChangesAsync(ct);
 
-        // Issue tokens
         var (accessToken, refreshToken) = _tokenService.CreateTokenPair(
             user,
             tenant,
             TenantRole.Member
         );
 
-        // Store refresh token hash
         var tokenHash = _tokenService.HashToken(refreshToken);
         var refreshEntity = RefreshToken.Create(user.Id, tokenHash, expiryDays: 7);
-        _db.RefreshTokens.Add(refreshEntity);
+        await _refreshTokenRepo.AddAsync(refreshEntity, ct);
         await _db.SaveChangesAsync(ct);
 
         return new TokenResponse(accessToken, refreshToken);

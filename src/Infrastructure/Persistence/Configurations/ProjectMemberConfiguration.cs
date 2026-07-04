@@ -2,7 +2,7 @@ using Domain.Entities.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace infrastructure.Persistence.Configurations;
+namespace Infrastructure.Persistence.Configurations;
 
 public class ProjectMemberConfiguration : IEntityTypeConfiguration<ProjectMember>
 {

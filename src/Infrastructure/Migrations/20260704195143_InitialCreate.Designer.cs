@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260611200656_RemovedSnakeCase")]
-    partial class RemovedSnakeCase
+    [Migration("20260704195143_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,8 +34,14 @@ namespace Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
@@ -64,15 +70,24 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DeletedById");
 
                     b.HasIndex("KeyHash")
                         .IsUnique();
 
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("ApiKeys");
                 });
@@ -83,13 +98,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -98,67 +106,42 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.Property<Guid>("PrimaryTenantId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                    b.HasIndex("Email")
+                        .IsUnique();
 
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Domain.Entities.Invitaiton", b =>
@@ -194,7 +177,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -204,24 +187,32 @@ namespace Infrastructure.Migrations
                     b.ToTable("Invitaitons");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Project", b =>
+            modelBuilder.Entity("Domain.Entities.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Color")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -231,17 +222,26 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DeletedById");
+
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("Domain.Entities.TaskItem", b =>
+            modelBuilder.Entity("Domain.Entities.Projects.ProjectMember", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,8 +250,101 @@ namespace Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DeletedById");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ProjectId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectMembers");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Tasks.TaskItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -266,12 +359,21 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DeletedById");
+
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("TaskItem");
                 });
@@ -290,13 +392,14 @@ namespace Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("IsolationMode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -321,13 +424,22 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DeletedById");
+
                     b.HasIndex("Slug")
                         .IsUnique();
+
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Tenants");
                 });
@@ -358,145 +470,35 @@ namespace Infrastructure.Migrations
                     b.ToTable("UserTenantRoles");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
-                {
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("LoginProvider", "ProviderKey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.ApiKey", b =>
                 {
+                    b.HasOne("Domain.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
                     b.HasOne("Domain.Entities.Tenant", "Tenant")
                         .WithMany("ApiKeys")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
+
                     b.Navigation("Tenant");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("Domain.Entities.Invitaiton", b =>
@@ -510,28 +512,140 @@ namespace Infrastructure.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Project", b =>
+            modelBuilder.Entity("Domain.Entities.Projects.Project", b =>
                 {
+                    b.HasOne("Domain.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
                     b.HasOne("Domain.Entities.Tenant", "Tenant")
                         .WithMany("Projects")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
+
                     b.Navigation("Tenant");
+
+                    b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("Domain.Entities.TaskItem", b =>
+            modelBuilder.Entity("Domain.Entities.Projects.ProjectMember", b =>
                 {
-                    b.HasOne("Domain.Entities.Project", null)
+                    b.HasOne("Domain.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
+                    b.HasOne("Domain.Entities.Projects.Project", "Project")
+                        .WithMany("Members")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Tenant", "Tenant")
+                        .WithMany("ProjectMembers")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "User")
+                        .WithMany("ProjectMemberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("UpdatedBy");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.ApplicationUser", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Tasks.TaskItem", b =>
+                {
+                    b.HasOne("Domain.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
+                    b.HasOne("Domain.Entities.Projects.Project", null)
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("Domain.Entities.Tenant", b =>
                 {
+                    b.HasOne("Domain.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById");
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
                     b.OwnsOne("Domain.Entities.TenantSettings", "Settings", b1 =>
                         {
                             b1.Property<Guid>("TenantId");
@@ -554,8 +668,14 @@ namespace Infrastructure.Migrations
                                 .HasForeignKey("TenantId");
                         });
 
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeletedBy");
+
                     b.Navigation("Settings")
                         .IsRequired();
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserTenantRole", b =>
@@ -577,64 +697,19 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
-                {
-                    b.HasOne("Domain.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
-                {
-                    b.HasOne("Domain.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
-                {
-                    b.HasOne("Domain.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Domain.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("ProjectMemberships");
+
+                    b.Navigation("RefreshTokens");
+
                     b.Navigation("TenantRoles");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Project", b =>
+            modelBuilder.Entity("Domain.Entities.Projects.Project", b =>
                 {
+                    b.Navigation("Members");
+
                     b.Navigation("Tasks");
                 });
 
@@ -643,6 +718,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ApiKeys");
 
                     b.Navigation("Invitaitons");
+
+                    b.Navigation("ProjectMembers");
 
                     b.Navigation("Projects");
 
