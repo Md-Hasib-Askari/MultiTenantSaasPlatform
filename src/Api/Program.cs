@@ -7,6 +7,7 @@ using Application.Common;
 using Application.Projects.Interfaces;
 using Application.Projects.Services;
 using Application.Tenants.Interfaces;
+using Application.Tenants.Services;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Identity;
@@ -103,8 +104,9 @@ builder.Services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantCon
 // Cache Service
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
-// Entity Service
+// Entity Services
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITenantService, TenantService>();
 
 // Respositories
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
