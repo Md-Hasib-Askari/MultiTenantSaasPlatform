@@ -6,6 +6,7 @@ using Application.Auth;
 using Application.Common;
 using Application.Projects.Interfaces;
 using Application.Projects.Services;
+using Application.Tasks.Interfaces;
 using Application.Tenants.Interfaces;
 using Application.Tenants.Services;
 using Application.Users.Interfaces;
@@ -16,11 +17,12 @@ using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Projects;
 using Infrastructure.Seed;
+using Infrastructure.Tasks;
 using Infrastructure.Tenants;
 using Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
@@ -80,10 +82,13 @@ builder
     });
 
 // Add services to the container.
-builder.Services.AddControllers()
+builder
+    .Services.AddControllers()
     .AddJsonOptions(o =>
     {
-        o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        o.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()
+        );
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -109,6 +114,8 @@ builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserTenantRoleRepository, UserTenantRoleRepository>();
 
