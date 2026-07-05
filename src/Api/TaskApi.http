@@ -1,0 +1,62 @@
+@Api_HostAddress = http://localhost:5204
+
+### Get task by ID
+GET {{Api_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Get tasks by project
+GET {{Api_HostAddress}}/api/tasks/by-project/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Get tasks by assignee
+GET {{Api_HostAddress}}/api/tasks/by-assignee/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Get tasks by reporter
+GET {{Api_HostAddress}}/api/tasks/by-reporter/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Get tasks by status
+GET {{Api_HostAddress}}/api/tasks/by-status/NotStarted
+Accept: application/json
+
+### Get tasks by priority
+GET {{Api_HostAddress}}/api/tasks/by-priority/High
+Accept: application/json
+
+### Create task
+POST {{Api_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "projectId": "00000000-0000-0000-0000-000000000000",
+  "title": "Implement login",
+  "description": "Add JWT-based authentication",
+  "status": "NotStarted",
+  "priority": "High",
+  "assigneeId": "00000000-0000-0000-0000-000000000000",
+  "dueDate": "2026-07-15T00:00:00Z",
+  "estimatedHours": 8.0,
+  "sequence": 1
+}
+
+### Create task (required only)
+POST {{Api_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "projectId": "00000000-0000-0000-0000-000000000000",
+  "title": "Write unit tests"
+}
+
+### Update task
+PATCH {{Api_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "status": "InProgress",
+  "priority": "Critical"
+}
+
+### Delete task
+DELETE {{Api_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000000

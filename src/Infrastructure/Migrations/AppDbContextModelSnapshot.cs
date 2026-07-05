@@ -86,7 +86,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("ApiKeys");
+                    b.ToTable("ApiKeys", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ApplicationUser", b =>
@@ -138,7 +138,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Invitaiton", b =>
@@ -181,7 +181,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Invitaitons");
+                    b.ToTable("Invitaitons", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Projects.Project", b =>
@@ -235,7 +235,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Projects.ProjectMember", b =>
@@ -289,7 +289,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ProjectId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ProjectMembers");
+                    b.ToTable("ProjectMembers", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
@@ -322,7 +322,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Tasks.TaskItem", b =>
@@ -414,7 +414,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("TenantId", "ProjectId", "Title")
                         .IsUnique();
 
-                    b.ToTable("TaskItems");
+                    b.ToTable("TaskItems", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Tenant", b =>
@@ -480,7 +480,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Tenants");
+                    b.ToTable("Tenants", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.UserTenantRole", b =>
@@ -506,7 +506,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "TenantId")
                         .IsUnique();
 
-                    b.ToTable("UserTenantRoles");
+                    b.ToTable("UserTenantRoles", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ApiKey", b =>
@@ -721,7 +721,7 @@ namespace Infrastructure.Migrations
 
                             b1.HasKey("TenantId");
 
-                            b1.ToTable("Tenants");
+                            b1.ToTable("Tenants", (string)null);
 
                             b1
                                 .ToJson("Settings")

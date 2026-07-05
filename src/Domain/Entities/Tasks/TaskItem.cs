@@ -12,7 +12,7 @@ public class TaskItem : BaseAudit, ITenantScoped
     public Guid ProjectId { get; private set; }
     public string Title { get; private set; } = string.Empty;
     public string? Description { get; private set; }
-    public TaskStatus Status { get; private set; } = TaskStatus.NotStarted;
+    public TaskItemStatus Status { get; private set; } = TaskItemStatus.NotStarted;
     public TaskPriority? Priority { get; private set; }
     public Guid? AssigneeId { get; private set; }
     public Guid? ReporterId { get; private set; }
@@ -32,7 +32,7 @@ public class TaskItem : BaseAudit, ITenantScoped
         Guid projectId,
         string title,
         string? description,
-        TaskStatus status,
+        TaskItemStatus status,
         TaskPriority? priority,
         Guid? assigneeId,
         Guid? reporterId,
@@ -66,10 +66,16 @@ public class TaskItem : BaseAudit, ITenantScoped
         };
     }
 
+    public void MarkAsDeleted(Guid deletedById)
+    {
+        DeletedAt = DateTimeOffset.UtcNow;
+        DeletedById = deletedById;
+    }
+
     public void Update(
         string? title,
         string? description,
-        TaskStatus? status,
+        TaskItemStatus? status,
         TaskPriority? priority,
         Guid? assigneeId,
         Guid? reporterId,
@@ -125,7 +131,7 @@ public class TaskItem : BaseAudit, ITenantScoped
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum TaskStatus
+public enum TaskItemStatus
 {
     NotStarted,
     InProgress,
