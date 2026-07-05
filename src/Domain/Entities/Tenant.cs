@@ -1,5 +1,6 @@
 using Domain.Entities.Common;
 using Domain.Entities.Projects;
+using Domain.Entities.Tasks;
 using Domain.Enums;
 
 namespace Domain.Entities;
@@ -23,6 +24,7 @@ public class Tenant : BaseAudit
 
     public ICollection<Project> Projects { get; private set; } = [];
     public ICollection<ProjectMember> ProjectMembers { get; private set; } = [];
+    public ICollection<TaskItem> TaskItems { get; private set; } = [];
     public ICollection<UserTenantRole> UserRoles { get; private set; } = [];
     public ICollection<Invitaiton> Invitaitons { get; private set; } = [];
     public ICollection<ApiKey> ApiKeys { get; private set; } = [];

@@ -16,10 +16,6 @@ public class ApplicationUser : IAuditable
     public DateTimeOffset? UpdatedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
-    public ICollection<UserTenantRole> TenantRoles { get; private set; } = [];
-    public ICollection<RefreshToken> RefreshTokens { get; private set; } = [];
-    public ICollection<ProjectMember> ProjectMemberships { get; private set; } = [];
-
     public static ApplicationUser Create(
         string userName,
         string email,

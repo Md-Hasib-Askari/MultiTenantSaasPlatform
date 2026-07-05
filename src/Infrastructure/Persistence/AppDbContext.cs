@@ -2,6 +2,7 @@ using System.Reflection;
 using Domain.Entities;
 using Domain.Entities.Common;
 using Domain.Entities.Projects;
+using Domain.Entities.Tasks;
 using Domain.Interfaces;
 using Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
     public DbSet<ProjectMember> ProjectMembers { get; set; } = null!;
     public DbSet<ApiKey> ApiKeys { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<TaskItem> TaskItems { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
         modelBuilder.ApplyConfiguration(new InvitationConfiguration());
         modelBuilder.ApplyConfiguration(new ProjectConfiguration());
         modelBuilder.ApplyConfiguration(new ProjectMemberConfiguration());
+        modelBuilder.ApplyConfiguration(new TaskItemConfiguration());
         modelBuilder.ApplyConfiguration(new ApiKeyConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
 
@@ -44,7 +47,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
             if (typeof(ICreateAudit).IsAssignableFrom(clrType))
             {
-                modelBuilder.Entity(clrType)
+                modelBuilder
+                    .Entity(clrType)
                     .HasOne(nameof(BaseAudit.CreatedBy))
                     .WithMany()
                     .HasForeignKey(nameof(BaseAudit.CreatedById));
@@ -52,7 +56,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
             if (typeof(IUpdateAudit).IsAssignableFrom(clrType))
             {
-                modelBuilder.Entity(clrType)
+                modelBuilder
+                    .Entity(clrType)
                     .HasOne(nameof(BaseAudit.UpdatedBy))
                     .WithMany()
                     .HasForeignKey(nameof(BaseAudit.UpdatedById));
@@ -60,7 +65,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
             if (typeof(IDeleteAudit).IsAssignableFrom(clrType))
             {
-                modelBuilder.Entity(clrType)
+                modelBuilder
+                    .Entity(clrType)
                     .HasOne(nameof(BaseAudit.DeletedBy))
                     .WithMany()
                     .HasForeignKey(nameof(BaseAudit.DeletedById));
