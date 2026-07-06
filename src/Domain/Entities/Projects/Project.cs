@@ -22,7 +22,7 @@ public class Project : BaseAudit, ITenantScoped
 
     private Project() { }
 
-    public static Project Create(Guid tenantId, string name, string? description, string? color)
+    public static Project Create(Guid tenantId, string name, string? description, string? color, Guid createdById)
     {
         ValidateName(name);
 
@@ -34,6 +34,7 @@ public class Project : BaseAudit, ITenantScoped
             Description = description,
             Color = ValidateColor(color) ?? "#63B3ED",
             CreatedAt = DateTimeOffset.UtcNow,
+            CreatedById = createdById,
         };
     }
 

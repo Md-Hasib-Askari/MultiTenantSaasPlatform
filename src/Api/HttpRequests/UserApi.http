@@ -1,38 +1,40 @@
 @Api_HostAddress = http://localhost:5204
-@Token = <your-jwt-token>
 
-### Register a new user
+### ─── BOOTSTRAP: Seed or create tenant first ─────────────────
+### Option A: dotnet run --project src/Api -- --seed
+###   → creates tenant "acme" + admin user (admin@mtsp.dev / Admin123!)
+### Option B: POST /api/tenants first, then register below
+### ──────────────────────────────────────────────────────────────
+
+### Register a new user (tenant must already exist)
 POST {{Api_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
+  "email": "test@mtsp.dev",
   "password": "Passw0rd!",
-  "displayName": "John Doe",
+  "displayName": "Test User",
   "tenantSlug": "acme"
 }
 
-### Login
+### Login → copy accessToken, set @Token below
 POST {{Api_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
+  "email": "test@mtsp.dev",
   "password": "Passw0rd!"
 }
 
-### Refresh token
+### Refresh token (reads refresh_token cookie)
 POST {{Api_HostAddress}}/api/auth/refresh
-Content-Type: application/json
 
-{
-  "refreshToken": "<your-refresh-token>"
-}
+### ─── Authenticated requests ─────────────────────────────────
+@Token =
 
 ### Get current user profile
 GET {{Api_HostAddress}}/api/users/me
 Authorization: Bearer {{Token}}
-Accept: application/json
 
 ### Update profile
 PATCH {{Api_HostAddress}}/api/users/me
@@ -46,4 +48,3 @@ Content-Type: application/json
 ### List tenant users (admin)
 GET {{Api_HostAddress}}/api/users
 Authorization: Bearer {{Token}}
-Accept: application/json

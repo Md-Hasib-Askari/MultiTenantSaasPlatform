@@ -1,31 +1,40 @@
 @Api_HostAddress = http://localhost:5204
+# Paste your access token below after running login
+@Token =
 
 ### Get task by ID
 GET {{Api_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Get tasks by project
 GET {{Api_HostAddress}}/api/tasks/by-project/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Get tasks by assignee
 GET {{Api_HostAddress}}/api/tasks/by-assignee/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Get tasks by reporter
 GET {{Api_HostAddress}}/api/tasks/by-reporter/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Get tasks by status
 GET {{Api_HostAddress}}/api/tasks/by-status/NotStarted
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Get tasks by priority
 GET {{Api_HostAddress}}/api/tasks/by-priority/High
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Create task
 POST {{Api_HostAddress}}/api/tasks
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -42,6 +51,7 @@ Content-Type: application/json
 
 ### Create task (required only)
 POST {{Api_HostAddress}}/api/tasks
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -51,6 +61,7 @@ Content-Type: application/json
 
 ### Update task
 PATCH {{Api_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -60,3 +71,4 @@ Content-Type: application/json
 
 ### Delete task
 DELETE {{Api_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}

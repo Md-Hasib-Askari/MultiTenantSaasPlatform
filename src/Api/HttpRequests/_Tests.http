@@ -1,0 +1,74 @@
+@Api_HostAddress = http://localhost:5204
+
+### ─── STEP 1: Create tenant (no header needed) ────────────────
+POST {{Api_HostAddress}}/api/tenants
+Content-Type: application/json
+
+{
+  "slug": "acme",
+  "name": "Acme Corp",
+  "plan": "Pro"
+}
+
+### ─── STEP 2: Register user (no header needed) ────────────────
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@mtsp.dev",
+  "password": "Passw0rd!",
+  "displayName": "Test User",
+  "tenantSlug": "acme"
+}
+
+### ─── STEP 3: Login → copy accessToken & tenant_id ──────────
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@mtsp.dev",
+  "password": "Passw0rd!"
+}
+
+### ─── STEP 4+: Set @Token and @TenantId, use header ──────────
+@Token =
+@TenantId =
+
+### Create project
+POST {{Api_HostAddress}}/api/projects
+Authorization: Bearer {{Token}}
+X-Tenant-Id: {{TenantId}}
+Content-Type: application/json
+
+{
+  "name": "My Project",
+  "description": "A sample project",
+  "color": "#63B3ED"
+}
+
+### List projects
+GET {{Api_HostAddress}}/api/projects
+Authorization: Bearer {{Token}}
+X-Tenant-Id: {{TenantId}}
+
+### Create task
+POST {{Api_HostAddress}}/api/tasks
+Authorization: Bearer {{Token}}
+X-Tenant-Id: {{TenantId}}
+Content-Type: application/json
+
+{
+  "projectId": "00000000-0000-0000-0000-000000000000",
+  "title": "Implement login",
+  "priority": "High"
+}
+
+### Add member
+POST {{Api_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000000/members
+Authorization: Bearer {{Token}}
+X-Tenant-Id: {{TenantId}}
+Content-Type: application/json
+
+{
+  "userId": "00000000-0000-0000-0000-000000000000"
+}

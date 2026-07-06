@@ -1,18 +1,18 @@
-using System.Security.Claims;
 using Application.Tasks.DTOs;
 using Application.Tasks.Interfaces;
 using Domain.Entities.Tasks;
-using Domain.Exceptions;
 using Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/tasks")]
 public class TaskController(ITaskService taskService, ITenantContext tenantContext) : ControllerBase
 {
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var task = await taskService.GetByIdAsync(tenantContext.TenantId, id, ct);
@@ -22,7 +22,7 @@ public class TaskController(ITaskService taskService, ITenantContext tenantConte
         return Ok(task);
     }
 
-    [HttpGet("by-project/{projectId}")]
+    [HttpGet("by-project/{projectId:guid}")]
     public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
     {
         var tasks = await taskService.GetByProjectIdAsync(tenantContext.TenantId, projectId, ct);
@@ -60,58 +60,24 @@ public class TaskController(ITaskService taskService, ITenantContext tenantConte
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTaskDto dto, CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
-            return Unauthorized(new { error = "User not authenticated." });
-
-        try
-        {
-            await taskService.AddAsync(tenantContext.TenantId, Guid.Parse(userId), dto, ct);
-            return Ok();
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message, errors = ex.Errors });
-        }
+        var userId = User.GetUserId();
+        await taskService.AddAsync(tenantContext.TenantId, userId, dto, ct);
+        return Ok();
     }
 
     [HttpPatch("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskDto dto, CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
-            return Unauthorized(new { error = "User not authenticated." });
-
-        try
-        {
-            await taskService.UpdateAsync(dto, id, tenantContext.TenantId, Guid.Parse(userId), ct);
-            return Ok();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message, errors = ex.Errors });
-        }
+        var userId = User.GetUserId();
+        await taskService.UpdateAsync(dto, id, tenantContext.TenantId, userId, ct);
+        return Ok();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
-            return Unauthorized(new { error = "User not authenticated." });
-
-        try
-        {
-            await taskService.DeleteAsync(tenantContext.TenantId, id, Guid.Parse(userId), ct);
-            return Ok();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
+        var userId = User.GetUserId();
+        await taskService.DeleteAsync(tenantContext.TenantId, id, userId, ct);
+        return Ok();
     }
 }

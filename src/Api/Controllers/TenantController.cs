@@ -1,10 +1,11 @@
 using Application.Tenants.DTOs;
 using Application.Tenants.Interfaces;
-using Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/tenants")]
 public class TenantController(ITenantService tenantService) : ControllerBase
@@ -36,39 +37,18 @@ public class TenantController(ITenantService tenantService) : ControllerBase
         return Ok(new { slug, exists });
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTenantDto dto, CancellationToken ct)
     {
-        try
-        {
-            await tenantService.AddAsync(dto, ct);
-            return Ok();
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message, errors = ex.Errors });
-        }
+        await tenantService.AddAsync(dto, ct);
+        return Ok();
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> Update(
-        Guid id,
-        [FromBody] UpdateTenantDto dto,
-        CancellationToken ct
-    )
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTenantDto dto, CancellationToken ct)
     {
-        try
-        {
-            await tenantService.UpdateAsync(id, dto, ct);
-            return Ok();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message, errors = ex.Errors });
-        }
+        await tenantService.UpdateAsync(id, dto, ct);
+        return Ok();
     }
 }

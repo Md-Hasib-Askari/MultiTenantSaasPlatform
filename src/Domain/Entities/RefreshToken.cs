@@ -21,6 +21,7 @@ public class RefreshToken
             UserId = userId,
             TokenHash = tokenHash,
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(expiryDays),
+            CreatedAt = DateTimeOffset.UtcNow,
         };
 
     public void Revoke() => RevokedAt = DateTimeOffset.UtcNow;

@@ -8,6 +8,7 @@ namespace Api.Controllers;
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
+    private const string RefreshTokenCookie = "refresh_token";
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(
@@ -15,45 +16,42 @@ public class AuthController(IAuthService authService) : ControllerBase
         CancellationToken ct
     )
     {
-        try
-        {
-            var result = await _authService.RegisterAsync(request, ct);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var result = await _authService.RegisterAsync(request, ct);
+        SetRefreshTokenCookie(result.RefreshToken);
+        return Ok(new { accessToken = result.AccessToken });
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
-    {
-        try
-        {
-            var result = await _authService.LoginAsync(request, ct);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { error = ex.Message });
-        }
-    }
-
-    [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh(
-        [FromBody] RefreshRequest request,
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request,
         CancellationToken ct
     )
     {
-        try
+        var result = await _authService.LoginAsync(request, ct);
+        SetRefreshTokenCookie(result.RefreshToken);
+        return Ok(new { accessToken = result.AccessToken });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(CancellationToken ct)
+    {
+        var refreshToken = Request.Cookies[RefreshTokenCookie];
+        if (string.IsNullOrEmpty(refreshToken))
+            return BadRequest(new { error = "No refresh token provided." });
+
+        var result = await _authService.RefreshAsync(refreshToken, ct);
+        SetRefreshTokenCookie(result.RefreshToken);
+        return Ok(new { accessToken = result.AccessToken });
+    }
+
+    private void SetRefreshTokenCookie(string refreshToken)
+    {
+        Response.Cookies.Append(RefreshTokenCookie, refreshToken, new CookieOptions
         {
-            var result = await _authService.RefreshAsync(request.RefreshToken, ct);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(7),
+            IsEssential = true,
+        });
     }
 }

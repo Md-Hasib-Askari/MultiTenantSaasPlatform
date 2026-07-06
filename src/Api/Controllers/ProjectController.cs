@@ -1,11 +1,12 @@
 using Application.Projects.DTOs;
 using Application.Projects.Interfaces;
-using Domain.Exceptions;
 using Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/projects")]
 public class ProjectController(IProjectService projectService, ITenantContext tenantContext) : ControllerBase
@@ -20,46 +21,22 @@ public class ProjectController(IProjectService projectService, ITenantContext te
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        try
-        {
-            var project = await projectService.GetByIdAsync(id, ct);
-            return Ok(project);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
+        var project = await projectService.GetByIdAsync(id, ct);
+        return Ok(project);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProjectDto dto, CancellationToken ct)
     {
-        try
-        {
-            await projectService.AddAsync(tenantContext.TenantId, dto, ct);
-            return Ok();
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message, errors = ex.Errors });
-        }
+        var userId = User.GetUserId();
+        await projectService.AddAsync(tenantContext.TenantId, dto, userId, ct);
+        return Ok();
     }
 
     [HttpPatch("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProjectDto dto, CancellationToken ct)
     {
-        try
-        {
-            await projectService.UpdateAsync(tenantContext.TenantId, id, dto, ct);
-            return Ok();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message, errors = ex.Errors });
-        }
+        await projectService.UpdateAsync(tenantContext.TenantId, id, dto, ct);
+        return Ok();
     }
 }

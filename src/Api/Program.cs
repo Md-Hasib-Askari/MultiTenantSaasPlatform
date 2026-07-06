@@ -7,6 +7,7 @@ using Application.Common;
 using Application.Projects.Interfaces;
 using Application.Projects.Services;
 using Application.Tasks.Interfaces;
+using Application.Tasks.Services;
 using Application.Tenants.Interfaces;
 using Application.Tenants.Services;
 using Application.Users.Interfaces;
@@ -65,6 +66,8 @@ var rsa = RSA.Create(2048);
 if (!string.IsNullOrEmpty(jwtOpts.PrivateKey))
     rsa.ImportFromPem(jwtOpts.PrivateKey);
 
+builder.Services.AddSingleton(rsa);
+
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -79,6 +82,41 @@ builder
             ValidAudience = jwtOpts.Audience,
             IssuerSigningKey = new RsaSecurityKey(rsa),
         };
+
+        o.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/problem+json";
+                var body = new
+                {
+                    type = "https://httpstatuses.com/401",
+                    title = "Unauthorized",
+                    status = 401,
+                    detail = context.ErrorDescription ?? "Authentication is required.",
+                    instance = context.Request.Path,
+                    traceId = context.HttpContext.TraceIdentifier,
+                };
+                return context.Response.WriteAsJsonAsync(body);
+            },
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/problem+json";
+                var body = new
+                {
+                    type = "https://httpstatuses.com/403",
+                    title = "Forbidden",
+                    status = 403,
+                    detail = "You are not authorized to access this resource.",
+                    instance = context.Request.Path,
+                    traceId = context.HttpContext.TraceIdentifier,
+                };
+                return context.Response.WriteAsJsonAsync(body);
+            },
+        };
     });
 
 // Add services to the container.
@@ -89,6 +127,7 @@ builder
         o.JsonSerializerOptions.Converters.Add(
             new System.Text.Json.Serialization.JsonStringEnumConverter()
         );
+        o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -108,6 +147,8 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 // Entity Services
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IProjectMemberService, ProjectMemberService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 
 // Repositories
@@ -144,6 +185,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.UseHttpsRedirection();

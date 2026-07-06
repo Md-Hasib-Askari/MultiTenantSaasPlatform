@@ -1,15 +1,20 @@
 @Api_HostAddress = http://localhost:5204
+# Paste your access token below after running login
+@Token =
 
 ### List all projects
 GET {{Api_HostAddress}}/api/projects
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Get project by ID
 GET {{Api_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ### Create project
 POST {{Api_HostAddress}}/api/projects
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -20,6 +25,7 @@ Content-Type: application/json
 
 ### Create project (required only)
 POST {{Api_HostAddress}}/api/projects
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -28,6 +34,7 @@ Content-Type: application/json
 
 ### Update project name
 PATCH {{Api_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -36,6 +43,7 @@ Content-Type: application/json
 
 ### Update project color
 PATCH {{Api_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
@@ -44,6 +52,7 @@ Content-Type: application/json
 
 ### Update all fields
 PATCH {{Api_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {

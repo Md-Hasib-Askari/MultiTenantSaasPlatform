@@ -1,0 +1,37 @@
+@Api_HostAddress = http://localhost:5204
+# Paste your access token below after running login
+@Token =
+@ProjectId = 00000000-0000-0000-0000-000000000000
+@UserId = 00000000-0000-0000-0000-000000000000
+
+### List all members of a project
+GET {{Api_HostAddress}}/api/projects/{{ProjectId}}/members
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### Get a specific member
+GET {{Api_HostAddress}}/api/projects/{{ProjectId}}/members/{{UserId}}
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### Add a member
+POST {{Api_HostAddress}}/api/projects/{{ProjectId}}/members
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "userId": "{{UserId}}"
+}
+
+### Update member role
+PATCH {{Api_HostAddress}}/api/projects/{{ProjectId}}/members/{{UserId}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "role": "Admin"
+}
+
+### Remove a member
+DELETE {{Api_HostAddress}}/api/projects/{{ProjectId}}/members/{{UserId}}
+Authorization: Bearer {{Token}}

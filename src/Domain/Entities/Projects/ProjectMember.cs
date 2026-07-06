@@ -18,24 +18,20 @@ public class ProjectMember : BaseAudit, ITenantScoped
 
     private ProjectMember() { }
 
-    public static ProjectMember Create(Guid tenantId, Guid projectId, Guid userId) =>
+    public static ProjectMember Create(Guid tenantId, Guid projectId, Guid userId, Guid createdById) =>
         new()
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             ProjectId = projectId,
             UserId = userId,
+            CreatedById = createdById,
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
-    public static bool ChangeRole(ProjectMember member, ProjectMemberRole newRole)
+    public void ChangeRole(ProjectMemberRole newRole)
     {
-        if (member.Role != newRole)
-        {
-            member.Role = newRole;
-            return true;
-        }
-        return false;
+        Role = newRole;
     }
 }
 

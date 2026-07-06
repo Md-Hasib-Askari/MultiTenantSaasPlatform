@@ -1,0 +1,672 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Api | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5204"
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" },
+              "example": {
+                "email": "test@mtsp.dev",
+                "password": "Passw0rd!",
+                "displayName": "Test User",
+                "tenantSlug": "acme"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
+              "example": {
+                "email": "admin@mtsp.dev",
+                "password": "Admin123!"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "tags": ["Project"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "tags": ["Project"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateProjectDto" },
+              "example": {
+                "name": "My Project",
+                "description": "A sample project for testing",
+                "color": "#63B3ED"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/projects/{id}": {
+      "get": {
+        "tags": ["Project"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["Project"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateProjectDto" },
+              "example": {
+                "name": "Renamed Project",
+                "description": "Updated description",
+                "color": "#48BB78"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/projects/{projectId}/members": {
+      "get": {
+        "tags": ["ProjectMember"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "tags": ["ProjectMember"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddProjectMemberDto" },
+              "example": {
+                "userId": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/projects/{projectId}/members/{userId}": {
+      "get": {
+        "tags": ["ProjectMember"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["ProjectMember"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateProjectMemberRoleDto" },
+              "example": { "role": "Admin" }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      },
+      "delete": {
+        "tags": ["ProjectMember"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks/{id}": {
+      "get": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e6d"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e6d"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateTaskDto" },
+              "example": {
+                "title": "Implement login",
+                "description": "Add JWT authentication flow",
+                "status": "InProgress",
+                "priority": 2,
+                "assigneeId": null,
+                "reporterId": null,
+                "dueDate": "2026-07-15T00:00:00Z",
+                "estimatedHours": 8.0,
+                "sequence": 1
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      },
+      "delete": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e6d"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks/by-project/{projectId}": {
+      "get": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks/by-assignee/{assigneeId}": {
+      "get": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "assigneeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks/by-reporter/{reporterId}": {
+      "get": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "reporterId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks/by-status/{status}": {
+      "get": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/TaskItemStatus" },
+            "example": "InProgress"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks/by-priority/{priority}": {
+      "get": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "priority",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/TaskPriority" },
+            "example": 2
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tasks": {
+      "post": {
+        "tags": ["Task"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateTaskDto" },
+              "example": {
+                "projectId": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b",
+                "title": "Implement login",
+                "description": "Add JWT authentication flow",
+                "status": "NotStarted",
+                "priority": 2,
+                "assigneeId": null,
+                "reporterId": null,
+                "dueDate": null,
+                "estimatedHours": null,
+                "sequence": 0
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tenants/{id}": {
+      "get": {
+        "tags": ["Tenant"],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e3a"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["Tenant"],
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantIdHeader" },
+          { "$ref": "#/components/parameters/AuthorizationHeader" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e3a"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateTenantDto" },
+              "example": {
+                "name": "Acme Corp",
+                "tenantStatus": 0,
+                "tenantPlan": 1,
+                "billingEmail": "billing@acme.com"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tenants/by-slug/{slug}": {
+      "get": {
+        "tags": ["Tenant"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "acme"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tenants/slug-exists": {
+      "get": {
+        "tags": ["Tenant"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "acme"
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "tags": ["Tenant"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateTenantDto" },
+              "example": {
+                "slug": "acme",
+                "name": "Acme Corp",
+                "plan": 1
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "TenantIdHeader": {
+        "name": "X-Tenant-Id",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "format": "uuid" },
+        "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e3a",
+        "description": "Tenant GUID returned from login response"
+      },
+      "AuthorizationHeader": {
+        "name": "Authorization",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "pattern": "^Bearer .+$" },
+        "example": "Bearer {{token}}",
+        "description": "JWT access token from login response"
+      }
+    },
+    "schemas": {
+      "AddProjectMemberDto": {
+        "required": ["userId"],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e5c"
+          }
+        }
+      },
+      "CreateProjectDto": {
+        "required": ["name", "description", "color"],
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "My Project" },
+          "description": { "type": ["null", "string"], "example": "A sample project for testing" },
+          "color": { "type": ["null", "string"], "example": "#63B3ED" }
+        }
+      },
+      "CreateTaskDto": {
+        "required": ["projectId", "title", "description"],
+        "type": "object",
+        "properties": {
+          "projectId": { "type": "string", "format": "uuid", "example": "0194fae2-2c84-7d93-bb89-8c1c9b3e8e4b" },
+          "title": { "type": "string", "example": "Implement login" },
+          "description": { "type": ["null", "string"], "example": "Add JWT authentication flow" },
+          "status": { "$ref": "#/components/schemas/TaskItemStatus", "example": "NotStarted" },
+          "priority": { "oneOf": [{ "type": "null" }, { "$ref": "#/components/schemas/TaskPriority" }], "example": 2 },
+          "assigneeId": { "type": ["null", "string"], "format": "uuid", "example": null },
+          "reporterId": { "type": ["null", "string"], "format": "uuid", "example": null },
+          "dueDate": { "type": ["null", "string"], "format": "date-time", "example": null },
+          "estimatedHours": { "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$", "type": ["null", "number", "string"], "format": "double", "example": null },
+          "sequence": { "pattern": "^-?(?:0|[1-9]\\d*)$", "type": ["integer", "string"], "format": "int32", "default": 0, "example": 0 }
+        }
+      },
+      "CreateTenantDto": {
+        "required": ["slug", "name"],
+        "type": "object",
+        "properties": {
+          "slug": { "type": "string", "example": "acme" },
+          "name": { "type": "string", "example": "Acme Corp" },
+          "plan": { "$ref": "#/components/schemas/PlanTier", "example": 1 }
+        }
+      },
+      "LoginRequest": {
+        "required": ["email", "password"],
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "example": "admin@mtsp.dev" },
+          "password": { "type": "string", "example": "Admin123!" }
+        }
+      },
+      "PlanTier": { "type": "integer", "example": 1 },
+      "ProjectMemberRole": {
+        "enum": ["Member", "Editor", "Admin"],
+        "example": "Admin"
+      },
+      "RegisterRequest": {
+        "required": ["email", "password", "displayName", "tenantSlug"],
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "example": "test@mtsp.dev" },
+          "password": { "type": "string", "example": "Passw0rd!" },
+          "displayName": { "type": "string", "example": "Test User" },
+          "tenantSlug": { "type": "string", "example": "acme" }
+        }
+      },
+      "TaskItemStatus": {
+        "enum": ["NotStarted", "InProgress", "Completed", "OnHold", "Cancelled", null],
+        "example": "NotStarted"
+      },
+      "TaskPriority": { "type": "integer", "example": 2 },
+      "TenantStatus": { "type": "integer", "example": 0 },
+      "UpdateProjectDto": {
+        "required": ["name", "description", "color"],
+        "type": "object",
+        "properties": {
+          "name": { "type": ["null", "string"], "example": "Renamed Project" },
+          "description": { "type": ["null", "string"], "example": "Updated description" },
+          "color": { "type": ["null", "string"], "example": "#48BB78" }
+        }
+      },
+      "UpdateProjectMemberRoleDto": {
+        "required": ["role"],
+        "type": "object",
+        "properties": {
+          "role": { "$ref": "#/components/schemas/ProjectMemberRole", "example": "Admin" }
+        }
+      },
+      "UpdateTaskDto": {
+        "required": ["title", "description", "status", "priority", "assigneeId", "reporterId", "dueDate", "estimatedHours", "sequence"],
+        "type": "object",
+        "properties": {
+          "title": { "type": ["null", "string"], "example": "Implement login" },
+          "description": { "type": ["null", "string"], "example": "Add JWT authentication flow" },
+          "status": { "oneOf": [{ "type": "null" }, { "$ref": "#/components/schemas/TaskItemStatus" }], "example": "InProgress" },
+          "priority": { "oneOf": [{ "type": "null" }, { "$ref": "#/components/schemas/TaskPriority" }], "example": 2 },
+          "assigneeId": { "type": ["null", "string"], "format": "uuid", "example": null },
+          "reporterId": { "type": ["null", "string"], "format": "uuid", "example": null },
+          "dueDate": { "type": ["null", "string"], "format": "date-time", "example": "2026-07-15T00:00:00Z" },
+          "estimatedHours": { "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$", "type": ["null", "number", "string"], "format": "double", "example": 8.0 },
+          "sequence": { "pattern": "^-?(?:0|[1-9]\\d*)$", "type": ["null", "integer", "string"], "format": "int32", "example": 1 }
+        }
+      },
+      "UpdateTenantDto": {
+        "required": ["name", "tenantStatus", "tenantPlan", "billingEmail"],
+        "type": "object",
+        "properties": {
+          "name": { "type": ["null", "string"], "example": "Acme Corp" },
+          "tenantStatus": { "$ref": "#/components/schemas/TenantStatus", "example": 0 },
+          "tenantPlan": { "$ref": "#/components/schemas/PlanTier", "example": 1 },
+          "billingEmail": { "type": ["null", "string"], "example": "billing@acme.com" }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Auth" },
+    { "name": "Project" },
+    { "name": "ProjectMember" },
+    { "name": "Task" },
+    { "name": "Tenant" }
+  ]
+}

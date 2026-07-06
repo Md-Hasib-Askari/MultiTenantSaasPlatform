@@ -23,20 +23,10 @@ public class JwtTokenService : ITokenService
     private readonly JwtOptions _opts;
     private readonly RsaSecurityKey _signingKey;
 
-    public JwtTokenService(IOptions<JwtOptions> opts)
+    public JwtTokenService(IOptions<JwtOptions> opts, RSA rsa)
     {
         _opts = opts.Value;
-        if (!string.IsNullOrEmpty(_opts.PrivateKey))
-        {
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(_opts.PrivateKey);
-            _signingKey = new RsaSecurityKey(rsa);
-        }
-        else
-        {
-            // Development: auto-generated RSA key
-            _signingKey = new RsaSecurityKey(RSA.Create(2048));
-        }
+        _signingKey = new RsaSecurityKey(rsa);
     }
 
     public (string AccessToken, string RefreshToken) CreateTokenPair(
