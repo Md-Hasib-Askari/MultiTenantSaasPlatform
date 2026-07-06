@@ -16,4 +16,10 @@ public class BaseAudit : ICreateAudit, IUpdateAudit, IDeleteAudit
 
     public Guid? DeletedById { get; protected set; }
     public ApplicationUser? DeletedBy { get; protected set; }
+
+    public void MarkAsDeleted(Guid deletedBy)
+    {
+        DeletedAt = DateTimeOffset.UtcNow;
+        DeletedById = deletedBy;
+    }
 }

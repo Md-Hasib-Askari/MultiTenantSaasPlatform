@@ -6,4 +6,6 @@ public interface IDeleteAudit
 
     Guid? DeletedById { get; }
     ApplicationUser? DeletedBy { get; }
+
+    void MarkAsDeleted(Guid deletedBy);
 }

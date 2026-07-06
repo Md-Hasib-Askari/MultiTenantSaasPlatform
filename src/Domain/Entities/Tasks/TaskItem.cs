@@ -66,12 +66,6 @@ public class TaskItem : BaseAudit, ITenantScoped
         };
     }
 
-    public void MarkAsDeleted(Guid deletedById)
-    {
-        DeletedAt = DateTimeOffset.UtcNow;
-        DeletedById = deletedById;
-    }
-
     public void Update(
         string? title,
         string? description,
