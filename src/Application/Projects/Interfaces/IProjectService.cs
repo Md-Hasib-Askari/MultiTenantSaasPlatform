@@ -10,11 +10,11 @@ public interface IProjectService
         Guid tenantId,
         CancellationToken ct = default
     );
-    Task AddAsync(Guid tenantId, CreateProjectDto createProjectDto, Guid createdById, CancellationToken ct = default);
+    Task AddAsync(Guid tenantId, CreateProjectRequest createProjectDto, Guid createdById, CancellationToken ct = default);
     Task UpdateAsync(
         Guid tenantId,
         Guid projectId,
-        UpdateProjectDto updateProjectDto,
+        UpdateProjectRequest updateProjectDto,
         CancellationToken ct = default
     );
     Task<bool> NameExistsAsync(Guid tenantId, string name, CancellationToken ct = default);

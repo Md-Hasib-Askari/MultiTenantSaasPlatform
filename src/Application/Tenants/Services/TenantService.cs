@@ -8,7 +8,7 @@ public class TenantService(ITenantRepository repo) : ITenantService
 {
     private readonly ITenantRepository _repo = repo;
 
-    public async Task AddAsync(CreateTenantDto createTenantDto, CancellationToken ct = default)
+    public async Task AddAsync(CreateTenantRequest createTenantDto, CancellationToken ct = default)
     {
         var tenant = Tenant.Create(
             createTenantDto.Slug,
@@ -32,7 +32,7 @@ public class TenantService(ITenantRepository repo) : ITenantService
 
     public async Task UpdateAsync(
         Guid id,
-        UpdateTenantDto updateTenantDto,
+        UpdateTenantRequest updateTenantDto,
         CancellationToken ct = default
     )
     {

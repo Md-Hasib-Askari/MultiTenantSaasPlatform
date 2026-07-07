@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Projects.DTOs;
 
-public record UpdateProjectDto(string? Name, string? Description, string? Color) : IValidatableObject
+public record UpdateProjectRequest(string? Name, string? Description, string? Color) : IValidatableObject
 {
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

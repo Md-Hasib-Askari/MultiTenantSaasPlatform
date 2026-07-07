@@ -8,7 +8,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
 {
     private readonly ITaskRepository _taskRepo = taskRepo;
 
-    public Task AddAsync(Guid tenantId, Guid createBy, CreateTaskDto taskItem, CancellationToken ct)
+    public Task AddAsync(Guid tenantId, Guid createBy, CreateTaskRequest taskItem, CancellationToken ct)
     {
         var task = TaskItem.Create(
             tenantId,
@@ -33,7 +33,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
         await _taskRepo.DeleteAsync(taskId, deletedBy, ct);
     }
 
-    public async Task<IEnumerable<TaskItemDto>> GetByAssigneeIdAsync(
+    public async Task<IEnumerable<TaskResponse>> GetByAssigneeIdAsync(
         Guid tenantId,
         Guid assigneeId,
         CancellationToken ct
@@ -43,14 +43,14 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
         return tasks.Select(MapToDto);
     }
 
-    public async Task<TaskItemDto?> GetByIdAsync(Guid tenantId, Guid taskId, CancellationToken ct)
+    public async Task<TaskResponse?> GetByIdAsync(Guid tenantId, Guid taskId, CancellationToken ct)
     {
         var task = await _taskRepo.GetByIdAsync(tenantId, taskId, ct);
 
         return task is not null ? MapToDto(task) : null;
     }
 
-    public async Task<IEnumerable<TaskItemDto>> GetByPriorityAsync(
+    public async Task<IEnumerable<TaskResponse>> GetByPriorityAsync(
         Guid tenantId,
         TaskPriority priority,
         CancellationToken ct
@@ -60,7 +60,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
         return tasks.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<TaskItemDto>> GetByProjectIdAsync(
+    public async Task<IEnumerable<TaskResponse>> GetByProjectIdAsync(
         Guid tenantId,
         Guid projectId,
         CancellationToken ct
@@ -70,7 +70,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
         return tasks.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<TaskItemDto>> GetByReporterIdAsync(
+    public async Task<IEnumerable<TaskResponse>> GetByReporterIdAsync(
         Guid tenantId,
         Guid reporterId,
         CancellationToken ct
@@ -80,7 +80,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
         return tasks.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<TaskItemDto>> GetByStatusAsync(
+    public async Task<IEnumerable<TaskResponse>> GetByStatusAsync(
         Guid tenantId,
         TaskItemStatus status,
         CancellationToken ct
@@ -91,7 +91,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
     }
 
     public async Task UpdateAsync(
-        UpdateTaskDto taskItem,
+        UpdateTaskRequest taskItem,
         Guid taskId,
         Guid tenantId,
         Guid updateBy,
@@ -117,7 +117,7 @@ public class TaskService(ITaskRepository taskRepo) : ITaskService
         await _taskRepo.UpdateAsync(task, ct);
     }
 
-    private static TaskItemDto MapToDto(TaskItem t) =>
+    private static TaskResponse MapToDto(TaskItem t) =>
         new(
             t.Id,
             t.TenantId,

@@ -27,7 +27,7 @@ public class ProjectController(IProjectService projectService, ITenantContext te
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateProjectDto dto, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] CreateProjectRequest dto, CancellationToken ct)
     {
         var userId = User.GetUserId();
         await projectService.AddAsync(tenantContext.TenantId, dto, userId, ct);
@@ -36,7 +36,7 @@ public class ProjectController(IProjectService projectService, ITenantContext te
 
     [Authorize(Policy = "ProjectMemberAdmin")]
     [HttpPatch("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProjectDto dto, CancellationToken ct)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProjectRequest dto, CancellationToken ct)
     {
         await projectService.UpdateAsync(tenantContext.TenantId, id, dto, ct);
         return Ok();

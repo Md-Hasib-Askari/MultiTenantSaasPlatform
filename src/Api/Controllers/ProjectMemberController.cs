@@ -41,7 +41,7 @@ public class ProjectMemberController(
     [HttpPost]
     public async Task<IActionResult> AddMember(
         Guid projectId,
-        [FromBody] AddProjectMemberDto dto,
+        [FromBody] AddProjectMemberRequest dto,
         CancellationToken ct
     )
     {
@@ -56,7 +56,7 @@ public class ProjectMemberController(
     public async Task<IActionResult> UpdateRole(
         Guid projectId,
         Guid userId,
-        [FromBody] UpdateProjectMemberRoleDto dto,
+        [FromBody] UpdateProjectMemberRoleRequest dto,
         CancellationToken ct
     )
     {
@@ -78,5 +78,5 @@ public class ProjectMemberController(
         return Ok();
     }
 
-    private static ProjectMemberDto MapToDto(ProjectMember m) => new(m.UserId, m.Role);
+    private static ProjectMemberResponse MapToDto(ProjectMember m) => new(m.UserId, m.Role);
 }

@@ -2,4 +2,4 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Projects.DTOs;
 
-public record AddProjectMemberDto([Required] Guid UserId);
+public record AddProjectMemberRequest([Required] Guid UserId);

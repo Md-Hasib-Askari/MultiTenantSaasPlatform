@@ -5,35 +5,35 @@ namespace Application.Tasks.Interfaces;
 
 public interface ITaskService
 {
-    Task<TaskItemDto?> GetByIdAsync(Guid tenantId, Guid taskId, CancellationToken ct);
-    Task<IEnumerable<TaskItemDto>> GetByProjectIdAsync(
+    Task<TaskResponse?> GetByIdAsync(Guid tenantId, Guid taskId, CancellationToken ct);
+    Task<IEnumerable<TaskResponse>> GetByProjectIdAsync(
         Guid tenantId,
         Guid projectId,
         CancellationToken ct
     );
-    Task<IEnumerable<TaskItemDto>> GetByAssigneeIdAsync(
+    Task<IEnumerable<TaskResponse>> GetByAssigneeIdAsync(
         Guid tenantId,
         Guid assigneeId,
         CancellationToken ct
     );
-    Task<IEnumerable<TaskItemDto>> GetByReporterIdAsync(
+    Task<IEnumerable<TaskResponse>> GetByReporterIdAsync(
         Guid tenantId,
         Guid reporterId,
         CancellationToken ct
     );
-    Task<IEnumerable<TaskItemDto>> GetByStatusAsync(
+    Task<IEnumerable<TaskResponse>> GetByStatusAsync(
         Guid tenantId,
         TaskItemStatus status,
         CancellationToken ct
     );
-    Task<IEnumerable<TaskItemDto>> GetByPriorityAsync(
+    Task<IEnumerable<TaskResponse>> GetByPriorityAsync(
         Guid tenantId,
         TaskPriority priority,
         CancellationToken ct
     );
-    Task AddAsync(Guid tenantId, Guid createdBy, CreateTaskDto taskItem, CancellationToken ct);
+    Task AddAsync(Guid tenantId, Guid createdBy, CreateTaskRequest taskItem, CancellationToken ct);
     Task UpdateAsync(
-        UpdateTaskDto taskItem,
+        UpdateTaskRequest taskItem,
         Guid taskId,
         Guid tenantId,
         Guid updatedBy,

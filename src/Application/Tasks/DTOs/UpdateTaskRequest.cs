@@ -14,7 +14,7 @@ namespace Application.Tasks.DTOs;
     "EstimatedHours",
     "Sequence"
 )]
-public record UpdateTaskDto(
+public record UpdateTaskRequest(
     string? Title,
     string? Description,
     TaskItemStatus? Status,

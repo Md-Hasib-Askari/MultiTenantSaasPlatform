@@ -10,7 +10,7 @@ public class ProjectService(IProjectRepository projectRepo) : IProjectService
 
     public async Task AddAsync(
         Guid tenantId,
-        CreateProjectDto createProjectDto,
+        CreateProjectRequest createProjectDto,
         Guid createdById,
         CancellationToken ct = default
     )
@@ -49,7 +49,7 @@ public class ProjectService(IProjectRepository projectRepo) : IProjectService
     public async Task UpdateAsync(
         Guid tenantId,
         Guid projectId,
-        UpdateProjectDto updateProjectDto,
+        UpdateProjectRequest updateProjectDto,
         CancellationToken ct = default
     )
     {

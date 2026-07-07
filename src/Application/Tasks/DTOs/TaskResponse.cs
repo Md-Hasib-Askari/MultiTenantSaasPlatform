@@ -2,7 +2,7 @@ using Domain.Entities.Tasks;
 
 namespace Application.Tasks.DTOs;
 
-public record TaskItemDto(
+public record TaskResponse(
     Guid Id,
     Guid TenantId,
     Guid ProjectId,

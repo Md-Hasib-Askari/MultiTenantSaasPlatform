@@ -3,4 +3,4 @@ using Domain.Entities.Projects;
 
 namespace Application.Projects.DTOs;
 
-public record UpdateProjectMemberRoleDto([Required] ProjectMemberRole Role);
+public record UpdateProjectMemberRoleRequest([Required] ProjectMemberRole Role);

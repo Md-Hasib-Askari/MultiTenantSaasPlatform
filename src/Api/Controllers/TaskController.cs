@@ -64,7 +64,7 @@ public class TaskController(
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateTaskDto dto, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] CreateTaskRequest dto, CancellationToken ct)
     {
         var userId = User.GetUserId();
 
@@ -78,7 +78,7 @@ public class TaskController(
 
     [Authorize(Policy = "TaskUpdate")]
     [HttpPatch("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskDto dto, CancellationToken ct)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskRequest dto, CancellationToken ct)
     {
         var userId = User.GetUserId();
         await taskService.UpdateAsync(dto, id, tenantContext.TenantId, userId, ct);

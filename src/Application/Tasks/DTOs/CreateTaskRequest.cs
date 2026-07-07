@@ -3,7 +3,7 @@ using Domain.Entities.Tasks;
 
 namespace Application.Tasks.DTOs;
 
-public record CreateTaskDto(
+public record CreateTaskRequest(
     [Required] Guid ProjectId,
     [Required] string Title,
     string? Description,
