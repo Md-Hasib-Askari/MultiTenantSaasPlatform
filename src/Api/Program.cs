@@ -162,10 +162,23 @@ if (!string.IsNullOrEmpty(redisConnectionString))
     {
         try
         {
-            var cfg = ConfigurationOptions.Parse(redisConnectionString);
-            cfg.AbortOnConnectFail = false;
-            cfg.ConnectTimeout = 5000;
-            cfg.SyncTimeout = 5000;
+            var cfg = new ConfigurationOptions { AbortOnConnectFail = false, ConnectTimeout = 5000, SyncTimeout = 5000 };
+            if (redisConnectionString.StartsWith("rediss://") || redisConnectionString.StartsWith("redis://"))
+            {
+                var uri = new Uri(redisConnectionString);
+                var parts = uri.UserInfo.Split(':');
+                cfg.EndPoints.Add($"{uri.Host}:{uri.Port}");
+                if (parts.Length > 1)
+                    cfg.Password = Uri.UnescapeDataString(parts[1]);
+                cfg.Ssl = uri.Scheme == "rediss";
+            }
+            else
+            {
+                cfg = ConfigurationOptions.Parse(redisConnectionString);
+                cfg.AbortOnConnectFail = false;
+                cfg.ConnectTimeout = 5000;
+                cfg.SyncTimeout = 5000;
+            }
             return ConnectionMultiplexer.Connect(cfg);
         }
         catch (Exception ex)
