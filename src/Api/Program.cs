@@ -198,8 +198,13 @@ builder.Services.AddDbContext<AppDbContext>(
     {
         var tenantContext = sp.GetRequiredService<ITenantContext>();
 
+        var rawConnStr = builder.Configuration.GetConnectionString("Postgres");
+        var connBuilder = new Npgsql.NpgsqlConnectionStringBuilder(rawConnStr);
+        if (connBuilder.SslMode == Npgsql.SslMode.Prefer || connBuilder.SslMode == Npgsql.SslMode.Disable)
+            connBuilder.SslMode = Npgsql.SslMode.Require;
+
         options
-            .UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+            .UseNpgsql(connBuilder.ConnectionString)
             // .UseSnakeCaseNamingConvention()
             .AddInterceptors(new RlsConnectionInterceptor(tenantContext));
     }
