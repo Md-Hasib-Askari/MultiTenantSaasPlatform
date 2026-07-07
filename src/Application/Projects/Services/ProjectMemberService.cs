@@ -70,13 +70,14 @@ public class ProjectMemberService(
         Guid tenantId,
         Guid projectId,
         Guid userId,
+        Guid deletedBy,
         CancellationToken ct = default
     )
     {
         if (!await _projectSvc.ExistsAsync(tenantId, projectId, ct))
             throw new InvalidOperationException("Project not found.");
 
-        await _projectMemberRepo.RemoveMemberAsync(projectId, userId, ct);
+        await _projectMemberRepo.RemoveMemberAsync(projectId, userId, deletedBy, ct);
     }
 
     public async Task UpdateMemberRoleAsync(

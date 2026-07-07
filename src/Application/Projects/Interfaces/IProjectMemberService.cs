@@ -27,6 +27,7 @@ public interface IProjectMemberService
         Guid tenantId,
         Guid projectId,
         Guid userId,
+        Guid deletedBy,
         CancellationToken ct = default
     );
     Task UpdateMemberRoleAsync(

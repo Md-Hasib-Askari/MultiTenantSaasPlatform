@@ -73,7 +73,7 @@ public class ProjectMemberController(
     )
     {
         await projectMemberService.RemoveMemberAsync(
-            tenantContext.TenantId, projectId, userId, ct);
+            tenantContext.TenantId, projectId, userId, User.GetUserId(), ct);
         return Ok();
     }
 }
