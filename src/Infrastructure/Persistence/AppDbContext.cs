@@ -37,6 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
         ConfigureAuditRelationships(modelBuilder);
         ApplyTenantQueryFilters(modelBuilder);
+        ApplySoftDeleteQueryFilters(modelBuilder);
     }
 
     private static void ConfigureAuditRelationships(ModelBuilder modelBuilder)
@@ -95,5 +96,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
         where TEntity : class, ITenantScoped
     {
         modelBuilder.Entity<TEntity>().HasQueryFilter(e => e.TenantId == _tenantContext.TenantId);
+    }
+
+    private void ApplySoftDeleteQueryFilters(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(IDeleteAudit).IsAssignableFrom(entityType.ClrType))
+            {
+                var method = typeof(AppDbContext)
+                    .GetMethod(
+                        nameof(ApplySoftDeleteQueryFilter),
+                        BindingFlags.NonPublic | BindingFlags.Instance
+                    )!
+                    .MakeGenericMethod(entityType.ClrType);
+                method.Invoke(this, [modelBuilder]);
+            }
+        }
+    }
+
+    private void ApplySoftDeleteQueryFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, IDeleteAudit
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => e.DeletedAt == null);
     }
 }
