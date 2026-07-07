@@ -94,28 +94,45 @@ public class TenantResolutionMiddleware(
         IConnectionMultiplexer? redis
     )
     {
-        if (redis is not null)
+        if (redis is not null && redis.IsConnected)
         {
-            var db = redis.GetDatabase();
-            var key = $"tenant:id:{id}";
-            var hit = await db.StringGetAsync(key);
+            try
+            {
+                var db = redis.GetDatabase();
+                var key = $"tenant:id:{id}";
+                var hit = await db.StringGetAsync(key);
 
-            if (hit.HasValue)
-                return JsonSerializer.Deserialize<TenantInfo>(hit.ToString()!);
-
-            var tenant = await repo.GetByIdAsync(id);
-            if (tenant is null)
-                return null;
-
-            var info = MapToTenantInfo(tenant);
-            var json = JsonSerializer.Serialize(info);
-            await db.StringSetAsync(key, json, TimeSpan.FromMinutes(5));
-            await db.StringSetAsync($"tenant:{tenant.Slug}", json, TimeSpan.FromMinutes(5));
-            return info;
+                if (hit.HasValue)
+                    return JsonSerializer.Deserialize<TenantInfo>(hit.ToString()!);
+            }
+            catch
+            {
+                // Redis unavailable — fall through to DB
+            }
         }
 
         var fromDb = await repo.GetByIdAsync(id);
-        return fromDb is not null ? MapToTenantInfo(fromDb) : null;
+        if (fromDb is null)
+            return null;
+
+        var info = MapToTenantInfo(fromDb);
+
+        if (redis is not null && redis.IsConnected)
+        {
+            try
+            {
+                var db = redis.GetDatabase();
+                var json = JsonSerializer.Serialize(info);
+                await db.StringSetAsync($"tenant:id:{id}", json, TimeSpan.FromMinutes(5));
+                await db.StringSetAsync($"tenant:{fromDb.Slug}", json, TimeSpan.FromMinutes(5));
+            }
+            catch
+            {
+                // best-effort cache write
+            }
+        }
+
+        return info;
     }
 
     private static TenantInfo MapToTenantInfo(Tenant t) =>
