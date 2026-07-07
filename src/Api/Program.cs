@@ -227,10 +227,17 @@ app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
+// Auto-apply pending EF Core migrations on startup (safe for deployments)
+using (var migrateScope = app.Services.CreateScope())
+{
+    var db = migrateScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 if (args.Contains("--seed"))
 {
-    using var scope = app.Services.CreateScope();
-    var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    using var seedScope = app.Services.CreateScope();
+    var seeder = seedScope.ServiceProvider.GetRequiredService<DataSeeder>();
     await seeder.SeedAsync();
     return;
 }
