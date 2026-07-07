@@ -14,8 +14,18 @@ public interface IProjectMemberRepository
         CancellationToken ct = default
     );
     Task<bool> IsMemberAsync(Guid projectId, Guid userId, CancellationToken ct = default);
-    Task AddMemberAsync(Guid projectId, Guid userId, Guid createdById, CancellationToken ct = default);
-    Task RemoveMemberAsync(Guid projectId, Guid userId, CancellationToken ct = default);
+    Task AddMemberAsync(
+        Guid projectId,
+        Guid userId,
+        Guid createdById,
+        CancellationToken ct = default
+    );
+    Task RemoveMemberAsync(
+        Guid projectId,
+        Guid userId,
+        Guid deletedBy,
+        CancellationToken ct = default
+    );
     Task UpdateMemberRoleAsync(
         Guid projectId,
         Guid userId,
