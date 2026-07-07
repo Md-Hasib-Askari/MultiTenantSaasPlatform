@@ -1,0 +1,13 @@
+**/.git
+**/.gitignore
+**/.gitmodules
+**/bin/
+**/obj/
+**/node_modules/
+**/.vs/
+**/logs/
+**/test*.sh
+**/test*.html
+docker/
+tests/
+scripts/

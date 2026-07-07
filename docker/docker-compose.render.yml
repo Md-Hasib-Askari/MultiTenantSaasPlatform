@@ -1,0 +1,77 @@
+# Deploy the full MTSP stack on Render via Docker Compose.
+#
+#   render deploy  — uses this file when linked via Render Blueprint.
+#   docker compose -f docker/docker-compose.render.yml up -d
+#
+# Required secrets (set as environment variables in Render dashboard):
+#   JWT__PrivateKey          — PEM-encoded RSA private key for token signing
+#   ConnectionStrings__Postgres — full PostgreSQL connection string
+#   ConnectionStrings__Redis    — Redis connection string (default: redis:6379)
+#
+# Render will provision Postgres and Redis as managed add-ons.  For local
+# testing this file starts them as containers instead.
+
+name: mtsp
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: src/Api/Dockerfile
+    container_name: mtsp-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: ${ConnectionStrings__Postgres}
+      ConnectionStrings__Redis: ${ConnectionStrings__Redis:-redis:6379}
+      Jwt__Issuer: ${Jwt__Issuer:-mtsp}
+      Jwt__Audience: ${Jwt__Audience:-mtsp}
+      Jwt__PrivateKey: ${Jwt__PrivateKey}
+      Jwt__ExpiryHours: ${Jwt__ExpiryHours:-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mtsp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mtsp}
+      POSTGRES_USER: ${POSTGRES_USER:-mtsp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mtsp}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mtsp} -d ${POSTGRES_DB:-mtsp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: mtsp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  pgdata:
+  redisdata:
