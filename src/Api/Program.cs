@@ -158,8 +158,21 @@ var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
 if (!string.IsNullOrEmpty(redisConnectionString))
 {
     builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-        ConnectionMultiplexer.Connect(redisConnectionString)
-    );
+    {
+        try
+        {
+            var cfg = ConfigurationOptions.Parse(redisConnectionString);
+            cfg.AbortOnConnectFail = false;
+            cfg.ConnectTimeout = 5000;
+            cfg.SyncTimeout = 5000;
+            return ConnectionMultiplexer.Connect(cfg);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Redis connection failed (degraded mode): {ex.Message}");
+            return null!;
+        }
+    });
 }
 
 // Tenant Context (Scoped = one per request)
