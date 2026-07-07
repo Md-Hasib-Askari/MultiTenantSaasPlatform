@@ -8,7 +8,7 @@
 ![C#](https://img.shields.io/badge/C%23-14-239120?logo=csharp)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-GPLv3-blue)
 
 ---
 
@@ -256,4 +256,4 @@ TenantFlow is open-source. Pick an area, open a PR, and tag `@Md-Hasib-Askari` f
 
 ## License
 
-MIT
+GNU General Public License v3.0
