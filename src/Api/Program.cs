@@ -11,6 +11,7 @@ using Application.Tasks.Services;
 using Application.Tenants.Interfaces;
 using Application.Tenants.Services;
 using Application.Users.Interfaces;
+using Application.Users.Services;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Identity;
@@ -169,6 +170,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IProjectMemberService, ProjectMemberService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

@@ -45,6 +45,19 @@ Content-Type: application/json
   "displayName": "Jane Doe"
 }
 
+### Update profile (email)
+PATCH {{Api_HostAddress}}/api/users/me
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "email": "jane@mtsp.dev"
+}
+
+### Delete current user (soft-delete)
+DELETE {{Api_HostAddress}}/api/users/me
+Authorization: Bearer {{Token}}
+
 ### List tenant users (admin)
 GET {{Api_HostAddress}}/api/users
 Authorization: Bearer {{Token}}
