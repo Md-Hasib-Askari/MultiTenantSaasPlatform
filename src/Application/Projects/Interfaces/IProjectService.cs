@@ -1,12 +1,11 @@
 using Application.Projects.DTOs;
-using Domain.Entities.Projects;
 
 namespace Application.Projects.Interfaces;
 
 public interface IProjectService
 {
-    Task<Project> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<IReadOnlyList<Project>> GetAllByTenantIdAsync(
+    Task<ProjectResponse> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<IReadOnlyList<ProjectResponse>> GetAllByTenantIdAsync(
         Guid tenantId,
         CancellationToken ct = default
     );

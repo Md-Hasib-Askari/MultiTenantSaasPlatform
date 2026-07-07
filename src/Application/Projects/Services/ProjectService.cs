@@ -10,26 +10,28 @@ public class ProjectService(IProjectRepository projectRepo) : IProjectService
 
     public async Task AddAsync(
         Guid tenantId,
-        CreateProjectRequest createProjectDto,
+        CreateProjectRequest request,
         Guid createdById,
         CancellationToken ct = default
     )
     {
-        await _projectRepo.AddAsync(tenantId, createProjectDto, createdById, ct);
+        await _projectRepo.AddAsync(tenantId, request, createdById, ct);
     }
 
-    public async Task<IReadOnlyList<Project>> GetAllByTenantIdAsync(
+    public async Task<IReadOnlyList<ProjectResponse>> GetAllByTenantIdAsync(
         Guid tenantId,
         CancellationToken ct = default
     )
     {
-        return await _projectRepo.GetAllByTenantIdAsync(tenantId, ct);
+        var projects = await _projectRepo.GetAllByTenantIdAsync(tenantId, ct);
+        return projects.Select(MapToResponse).ToList();
     }
 
-    public async Task<Project> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<ProjectResponse> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _projectRepo.GetByIdAsync(id, ct)
+        var project = await _projectRepo.GetByIdAsync(id, ct)
             ?? throw new KeyNotFoundException($"Project with ID {id} not found.");
+        return MapToResponse(project);
     }
 
     public async Task<bool> ExistsAsync(
@@ -49,10 +51,23 @@ public class ProjectService(IProjectRepository projectRepo) : IProjectService
     public async Task UpdateAsync(
         Guid tenantId,
         Guid projectId,
-        UpdateProjectRequest updateProjectDto,
+        UpdateProjectRequest request,
         CancellationToken ct = default
     )
     {
-        await _projectRepo.UpdateAsync(tenantId, projectId, updateProjectDto, ct);
+        await _projectRepo.UpdateAsync(tenantId, projectId, request, ct);
     }
+
+    private static ProjectResponse MapToResponse(Project p) => new(
+        p.Id,
+        p.TenantId,
+        p.Name,
+        p.Description,
+        p.Color,
+        p.IsActive,
+        p.CreatedAt,
+        p.CreatedById,
+        p.UpdatedAt,
+        p.UpdatedById
+    );
 }
