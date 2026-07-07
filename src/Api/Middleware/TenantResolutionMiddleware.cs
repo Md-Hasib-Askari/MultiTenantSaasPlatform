@@ -24,12 +24,19 @@ public class TenantResolutionMiddleware(
     )
     {
         var path = "/" + (ctx.Request.Path.Value ?? "").TrimStart('/');
-        _log.LogDebug("TenantResolutionMiddleware path={Path} method={Method}", path, ctx.Request.Method);
+        _log.LogDebug(
+            "TenantResolutionMiddleware path={Path} method={Method}",
+            path,
+            ctx.Request.Method
+        );
 
-        if (path.StartsWith("/health") || path.StartsWith("/metrics") ||
-            path.StartsWith("/openapi") ||
-            path.StartsWith("/api/auth") ||
-            (path == "/api/tenants" && ctx.Request.Method == "POST"))
+        if (
+            path.StartsWith("/health")
+            || path.StartsWith("/metrics")
+            || path.StartsWith("/openapi")
+            || path.StartsWith("/api/auth")
+            || (path == "/api/tenants" && ctx.Request.Method == "POST")
+        )
         {
             _log.LogTrace("Bypassing tenant resolution for {Path}", path);
             await _next(ctx);
@@ -97,13 +104,13 @@ public class TenantResolutionMiddleware(
         if (tenant is null)
             return null;
 
-        var info = Map(tenant);
+        var info = MapToTenantInfo(tenant);
         var json = JsonSerializer.Serialize(info);
         await db.StringSetAsync(key, json, TimeSpan.FromMinutes(5));
         await db.StringSetAsync($"tenant:{tenant.Slug}", json, TimeSpan.FromMinutes(5));
         return info;
     }
 
-    private static TenantInfo Map(Tenant t) =>
-        new(t.Id, t.Slug, t.Name, t.Plan, t.Status);
+    private static TenantInfo MapToTenantInfo(Tenant t) =>
+        new(t.Id, t.Slug, t.Name, t.Plan, t.Status, t.DeletedAt);
 }
