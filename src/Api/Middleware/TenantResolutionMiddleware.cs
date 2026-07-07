@@ -19,10 +19,10 @@ public class TenantResolutionMiddleware(
     public async Task InvokeAsync(
         HttpContext ctx,
         TenantContext tenantCtx,
-        ITenantRepository tenantRepo
+        ITenantRepository tenantRepo,
+        IConnectionMultiplexer redis
     )
     {
-        var redis = ctx.RequestServices.GetService<IConnectionMultiplexer>();
         var path = "/" + (ctx.Request.Path.Value ?? "").TrimStart('/');
         _log.LogDebug(
             "TenantResolutionMiddleware path={Path} method={Method}",
@@ -90,33 +90,25 @@ public class TenantResolutionMiddleware(
     private static async Task<TenantInfo?> TryByIdAsync(
         Guid id,
         ITenantRepository repo,
-        IConnectionMultiplexer? redis
+        IConnectionMultiplexer redis
     )
     {
-        if (redis is not null)
-        {
-            var db = redis.GetDatabase();
-            var key = $"tenant:id:{id}";
-            var hit = await db.StringGetAsync(key);
+        var db = redis.GetDatabase();
+        var key = $"tenant:id:{id}";
+        var hit = await db.StringGetAsync(key);
 
-            if (hit.HasValue)
-                return JsonSerializer.Deserialize<TenantInfo>(hit.ToString());
-        }
+        if (hit.HasValue)
+            return JsonSerializer.Deserialize<TenantInfo>(hit.ToString());
 
         var tenant = await repo.GetByIdAsync(id);
         if (tenant is null)
             return null;
 
-        if (redis is not null)
-        {
-            var info = MapToTenantInfo(tenant);
-            var json = JsonSerializer.Serialize(info);
-            var db = redis.GetDatabase();
-            await db.StringSetAsync($"tenant:id:{id}", json, TimeSpan.FromMinutes(5));
-            await db.StringSetAsync($"tenant:{tenant.Slug}", json, TimeSpan.FromMinutes(5));
-        }
-
-        return MapToTenantInfo(tenant);
+        var info = MapToTenantInfo(tenant);
+        var json = JsonSerializer.Serialize(info);
+        await db.StringSetAsync(key, json, TimeSpan.FromMinutes(5));
+        await db.StringSetAsync($"tenant:{tenant.Slug}", json, TimeSpan.FromMinutes(5));
+        return info;
     }
 
     private static TenantInfo MapToTenantInfo(Tenant t) =>
