@@ -250,35 +250,50 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
-
-app.MapGet("/health/redis", (IConnectionMultiplexer? redis) =>
+app.MapGet("/health", async (HttpContext ctx, IConnectionMultiplexer? redis, AppDbContext db) =>
 {
-    if (redis is null)
-        return Results.Ok(new { status = "not_configured", timestamp = DateTime.UtcNow });
-    try
-    {
-        var db = redis.GetDatabase();
-        db.Ping();
-        return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
-    }
-    catch (Exception ex)
-    {
-        return Results.Ok(new { status = "unhealthy", error = ex.Message, timestamp = DateTime.UtcNow });
-    }
-});
+    var check = ctx.Request.Query["check"].FirstOrDefault() ?? "basic";
 
-app.MapGet("/health/database", async (AppDbContext db) =>
-{
-    try
+    var result = new Dictionary<string, object>
     {
-        await db.Database.ExecuteSqlRawAsync("SELECT 1");
-        return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
-    }
-    catch (Exception ex)
+        ["timestamp"] = DateTime.UtcNow
+    };
+
+    if (check == "basic" || check == "all")
     {
-        return Results.Ok(new { status = "unhealthy", error = ex.Message, timestamp = DateTime.UtcNow });
+        result["status"] = "healthy";
     }
+
+    if (check == "redis" || check == "all")
+    {
+        if (redis is null)
+            result["redis"] = new { status = "not_configured" };
+        else
+            try
+            {
+                await redis.GetDatabase().PingAsync();
+                result["redis"] = new { status = "healthy" };
+            }
+            catch (Exception ex)
+            {
+                result["redis"] = new { status = "unhealthy", error = ex.Message };
+            }
+    }
+
+    if (check == "database" || check == "all")
+    {
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("SELECT 1");
+            result["database"] = new { status = "healthy" };
+        }
+        catch (Exception ex)
+        {
+            result["database"] = new { status = "unhealthy", error = ex.Message };
+        }
+    }
+
+    return Results.Ok(result);
 });
 
 // Auto-apply pending EF Core migrations on startup (safe for deployments)
