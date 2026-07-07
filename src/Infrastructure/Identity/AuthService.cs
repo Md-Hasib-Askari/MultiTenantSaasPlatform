@@ -36,7 +36,7 @@ public class AuthService(
             await _userRepo.GetByEmailAsync(request.Email, ct)
             ?? throw new UnauthorizedAccessException("Invalid email or password.");
 
-        if (!user.IsActive)
+        if (user.Status != UserStatus.Active)
             throw new UnauthorizedAccessException("Account is not active.");
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
@@ -74,7 +74,7 @@ public class AuthService(
         storedToken.Revoke();
 
         var user = storedToken.User;
-        if (!user.IsActive)
+        if (user.Status != UserStatus.Active)
             throw new UnauthorizedAccessException("Account is not active.");
 
         var tenant =
