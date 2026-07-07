@@ -65,10 +65,19 @@ builder
     .AddPolicy(
         "ProjectMemberAdmin",
         policy => policy.Requirements.Add(new ProjectMemberRoleRequirement("Admin"))
+    )
+    .AddPolicy(
+        "ProjectMemberEdit",
+        policy => policy.Requirements.Add(new ProjectMemberRoleRequirement("Editor", "Admin"))
+    )
+    .AddPolicy(
+        "TaskUpdate",
+        policy => policy.Requirements.Add(new TaskUpdateRequirement())
     );
 builder.Services.AddSingleton<IAuthorizationHandler, TenantRoleHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, TenantMemberHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ProjectMemberRoleHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, TaskUpdateHandler>();
 builder.Services.AddHttpContextAccessor();
 
 var jwtOpts = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()!;

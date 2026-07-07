@@ -23,7 +23,12 @@ public class ProjectMemberRoleHandler(
             return;
         }
 
-        var projectId = ResolveProjectId(httpContextAccessor.HttpContext);
+        // Try to resolve project ID from the resource (passed via IAuthorizationService)
+        // or from the route data
+        var projectId = context.Resource is Guid resourceId
+            ? resourceId
+            : await ResolveProjectIdAsync(httpContextAccessor.HttpContext);
+
         if (projectId is null)
         {
             context.Fail(new AuthorizationFailureReason(this, "Could not resolve project ID from request."));
@@ -56,14 +61,14 @@ public class ProjectMemberRoleHandler(
         }
     }
 
-    private static Guid? ResolveProjectId(HttpContext? ctx)
+    private async Task<Guid?> ResolveProjectIdAsync(HttpContext? ctx)
     {
         if (ctx is null)
             return null;
 
         var routeData = ctx.Request.RouteValues;
 
-        // Check for {projectId} (ProjectMemberController)
+        // Check for {projectId} (ProjectMemberController, TaskController by-project)
         if (routeData.TryGetValue("projectId", out var projectIdVal) &&
             Guid.TryParse(projectIdVal?.ToString(), out var pid))
             return pid;
@@ -75,10 +80,21 @@ public class ProjectMemberRoleHandler(
             Guid.TryParse(idVal?.ToString(), out var id))
             return id;
 
-        // Check for {projectId} on task routes (by-project/{projectId})
-        if (routeData.TryGetValue("projectId", out var taskPid) &&
-            Guid.TryParse(taskPid?.ToString(), out var taskPidGuid))
-            return taskPidGuid;
+        // Check for {id} on task routes — look up the task to find its project
+        if (routeData.TryGetValue("controller", out var taskCtrl) &&
+            string.Equals(taskCtrl?.ToString(), "Task", StringComparison.OrdinalIgnoreCase) &&
+            routeData.TryGetValue("id", out var taskIdVal) &&
+            Guid.TryParse(taskIdVal?.ToString(), out var taskId))
+        {
+            var taskProject = await db
+                .TaskItems.AsNoTracking()
+                .Where(t => t.Id == taskId)
+                .Select(t => t.ProjectId)
+                .FirstOrDefaultAsync();
+
+            if (taskProject != Guid.Empty)
+                return taskProject;
+        }
 
         return null;
     }

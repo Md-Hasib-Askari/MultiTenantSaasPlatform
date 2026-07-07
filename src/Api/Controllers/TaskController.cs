@@ -10,8 +10,13 @@ namespace Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/tasks")]
-public class TaskController(ITaskService taskService, ITenantContext tenantContext) : ControllerBase
+public class TaskController(
+    ITaskService taskService,
+    ITenantContext tenantContext,
+    IAuthorizationService authorizationService
+) : ControllerBase
 {
+    [Authorize(Policy = "ProjectMemberView")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
@@ -62,10 +67,16 @@ public class TaskController(ITaskService taskService, ITenantContext tenantConte
     public async Task<IActionResult> Create([FromBody] CreateTaskDto dto, CancellationToken ct)
     {
         var userId = User.GetUserId();
+
+        var auth = await authorizationService.AuthorizeAsync(User, dto.ProjectId, "ProjectMemberEdit");
+        if (!auth.Succeeded)
+            return Forbid();
+
         await taskService.AddAsync(tenantContext.TenantId, userId, dto, ct);
         return Ok();
     }
 
+    [Authorize(Policy = "TaskUpdate")]
     [HttpPatch("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTaskDto dto, CancellationToken ct)
     {
@@ -74,6 +85,7 @@ public class TaskController(ITaskService taskService, ITenantContext tenantConte
         return Ok();
     }
 
+    [Authorize(Policy = "ProjectMemberAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
