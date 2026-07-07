@@ -12,7 +12,7 @@ namespace Infrastructure.Persistence;
 public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext tenantContext)
     : DbContext(options)
 {
-    private readonly ITenantContext _itenantContext = tenantContext;
+    private readonly ITenantContext _tenantContext = tenantContext;
     public DbSet<ApplicationUser> Users { get; set; } = null!;
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<UserTenantRole> UserTenantRoles { get; set; } = null!;
@@ -94,6 +94,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
     private void ApplyTenantQueryFilter<TEntity>(ModelBuilder modelBuilder)
         where TEntity : class, ITenantScoped
     {
-        modelBuilder.Entity<TEntity>().HasQueryFilter(e => e.TenantId == _itenantContext.TenantId);
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => e.TenantId == _tenantContext.TenantId);
     }
 }
