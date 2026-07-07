@@ -1,3 +1,4 @@
+using Api.Models;
 using Application.Projects.DTOs;
 using Application.Projects.Interfaces;
 using Domain.Interfaces;
@@ -15,7 +16,7 @@ public class ProjectController(IProjectService projectService, ITenantContext te
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var projects = await projectService.GetAllByTenantIdAsync(tenantContext.TenantId, ct);
-        return Ok(projects);
+        return Ok(ApiResponse<IReadOnlyList<ProjectResponse>>.Ok(projects));
     }
 
     [Authorize(Policy = "ProjectMemberView")]
@@ -23,7 +24,7 @@ public class ProjectController(IProjectService projectService, ITenantContext te
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var project = await projectService.GetByIdAsync(id, ct);
-        return Ok(project);
+        return Ok(ApiResponse<ProjectResponse>.Ok(project));
     }
 
     [HttpPost]
@@ -31,7 +32,7 @@ public class ProjectController(IProjectService projectService, ITenantContext te
     {
         var userId = User.GetUserId();
         await projectService.AddAsync(tenantContext.TenantId, dto, userId, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Project created successfully"));
     }
 
     [Authorize(Policy = "ProjectMemberAdmin")]
@@ -39,6 +40,6 @@ public class ProjectController(IProjectService projectService, ITenantContext te
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProjectRequest dto, CancellationToken ct)
     {
         await projectService.UpdateAsync(tenantContext.TenantId, id, dto, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Project updated successfully"));
     }
 }

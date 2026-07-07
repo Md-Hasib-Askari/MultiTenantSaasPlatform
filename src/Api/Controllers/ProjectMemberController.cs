@@ -1,3 +1,4 @@
+using Api.Models;
 using Application.Projects.DTOs;
 using Application.Projects.Interfaces;
 using Domain.Interfaces;
@@ -20,7 +21,7 @@ public class ProjectMemberController(
     {
         var members = await projectMemberService.GetMembersByProjectIdAsync(
             tenantContext.TenantId, projectId, ct);
-        return Ok(members);
+        return Ok(ApiResponse<IReadOnlyList<ProjectMemberResponse>>.Ok(members));
     }
 
     [Authorize(Policy = "ProjectMemberView")]
@@ -33,7 +34,7 @@ public class ProjectMemberController(
         if (member is null)
             return NotFound(new { error = "Member not found." });
 
-        return Ok(member);
+        return Ok(ApiResponse<ProjectMemberResponse>.Ok(member));
     }
 
     [Authorize(Policy = "ProjectMemberAdmin")]
@@ -47,7 +48,7 @@ public class ProjectMemberController(
         var userId = User.GetUserId();
         await projectMemberService.AddMemberAsync(
             tenantContext.TenantId, projectId, dto.UserId, userId, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Member added successfully"));
     }
 
     [Authorize(Policy = "ProjectMemberAdmin")]
@@ -61,7 +62,7 @@ public class ProjectMemberController(
     {
         await projectMemberService.UpdateMemberRoleAsync(
             tenantContext.TenantId, projectId, userId, dto.Role, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Role updated successfully"));
     }
 
     [Authorize(Policy = "ProjectMemberAdmin")]
@@ -74,6 +75,6 @@ public class ProjectMemberController(
     {
         await projectMemberService.RemoveMemberAsync(
             tenantContext.TenantId, projectId, userId, User.GetUserId(), ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Member removed successfully"));
     }
 }

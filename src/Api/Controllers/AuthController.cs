@@ -1,3 +1,4 @@
+using Api.Models;
 using Application.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,7 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
     {
         var result = await _authService.RegisterAsync(request, ct);
         SetRefreshTokenCookie(result.RefreshToken);
-        return Ok(new { accessToken = result.AccessToken });
+        return Ok(ApiResponse<object>.Ok(new { accessToken = result.AccessToken }, "Registration successful"));
     }
 
     [HttpPost("login")]
@@ -30,7 +31,7 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
     {
         var result = await _authService.LoginAsync(request, ct);
         SetRefreshTokenCookie(result.RefreshToken);
-        return Ok(new { accessToken = result.AccessToken });
+        return Ok(ApiResponse<object>.Ok(new { accessToken = result.AccessToken }, "Login successful"));
     }
 
     [HttpPost("refresh")]
@@ -42,7 +43,7 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
 
         var result = await _authService.RefreshAsync(refreshToken, ct);
         SetRefreshTokenCookie(result.RefreshToken);
-        return Ok(new { accessToken = result.AccessToken });
+        return Ok(ApiResponse<object>.Ok(new { accessToken = result.AccessToken }, "Token refreshed successfully"));
     }
 
     private void SetRefreshTokenCookie(string refreshToken)

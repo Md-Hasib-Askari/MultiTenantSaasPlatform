@@ -1,3 +1,4 @@
+using Api.Models;
 using Application.Tasks.DTOs;
 using Application.Tasks.Interfaces;
 using Domain.Entities.Tasks;
@@ -24,7 +25,7 @@ public class TaskController(
         if (task is null)
             return NotFound(new { error = $"Task with ID {id} not found." });
 
-        return Ok(task);
+        return Ok(ApiResponse<TaskResponse>.Ok(task));
     }
 
     [Authorize(Policy = "ProjectMemberView")]
@@ -32,35 +33,35 @@ public class TaskController(
     public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
     {
         var tasks = await taskService.GetByProjectIdAsync(tenantContext.TenantId, projectId, ct);
-        return Ok(tasks);
+        return Ok(ApiResponse<IEnumerable<TaskResponse>>.Ok(tasks));
     }
 
     [HttpGet("by-assignee/{assigneeId}")]
     public async Task<IActionResult> GetByAssigneeId(Guid assigneeId, CancellationToken ct)
     {
         var tasks = await taskService.GetByAssigneeIdAsync(tenantContext.TenantId, assigneeId, ct);
-        return Ok(tasks);
+        return Ok(ApiResponse<IEnumerable<TaskResponse>>.Ok(tasks));
     }
 
     [HttpGet("by-reporter/{reporterId}")]
     public async Task<IActionResult> GetByReporterId(Guid reporterId, CancellationToken ct)
     {
         var tasks = await taskService.GetByReporterIdAsync(tenantContext.TenantId, reporterId, ct);
-        return Ok(tasks);
+        return Ok(ApiResponse<IEnumerable<TaskResponse>>.Ok(tasks));
     }
 
     [HttpGet("by-status/{status}")]
     public async Task<IActionResult> GetByStatus(TaskItemStatus status, CancellationToken ct)
     {
         var tasks = await taskService.GetByStatusAsync(tenantContext.TenantId, status, ct);
-        return Ok(tasks);
+        return Ok(ApiResponse<IEnumerable<TaskResponse>>.Ok(tasks));
     }
 
     [HttpGet("by-priority/{priority}")]
     public async Task<IActionResult> GetByPriority(TaskPriority priority, CancellationToken ct)
     {
         var tasks = await taskService.GetByPriorityAsync(tenantContext.TenantId, priority, ct);
-        return Ok(tasks);
+        return Ok(ApiResponse<IEnumerable<TaskResponse>>.Ok(tasks));
     }
 
     [HttpPost]
@@ -73,7 +74,7 @@ public class TaskController(
             return Forbid();
 
         await taskService.AddAsync(tenantContext.TenantId, userId, dto, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Task created successfully"));
     }
 
     [Authorize(Policy = "TaskUpdate")]
@@ -82,7 +83,7 @@ public class TaskController(
     {
         var userId = User.GetUserId();
         await taskService.UpdateAsync(dto, id, tenantContext.TenantId, userId, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Task updated successfully"));
     }
 
     [Authorize(Policy = "ProjectMemberAdmin")]
@@ -91,6 +92,6 @@ public class TaskController(
     {
         var userId = User.GetUserId();
         await taskService.DeleteAsync(tenantContext.TenantId, id, userId, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("Task deleted successfully"));
     }
 }

@@ -1,3 +1,4 @@
+using Api.Models;
 using Application.Users.DTOs;
 using Application.Users.Interfaces;
 using Domain.Interfaces;
@@ -16,7 +17,7 @@ public class UserController(IUserService userService, ITenantContext tenantConte
     {
         var userId = User.GetUserId();
         var user = await userService.GetByIdAsync(userId, ct);
-        return Ok(user);
+        return Ok(ApiResponse<UserResponse>.Ok(user));
     }
 
     [HttpPatch("me")]
@@ -24,7 +25,7 @@ public class UserController(IUserService userService, ITenantContext tenantConte
     {
         var userId = User.GetUserId();
         var user = await userService.UpdateAsync(userId, dto, ct);
-        return Ok(user);
+        return Ok(ApiResponse<UserResponse>.Ok(user, "User updated successfully"));
     }
 
     [HttpDelete("me")]
@@ -32,13 +33,13 @@ public class UserController(IUserService userService, ITenantContext tenantConte
     {
         var userId = User.GetUserId();
         await userService.DeleteAsync(userId, ct);
-        return Ok();
+        return Ok(ApiResponse<object>.Ok("User deleted successfully"));
     }
 
     [HttpGet]
     public async Task<IActionResult> GetUsers(CancellationToken ct)
     {
         var users = await userService.GetByTenantIdAsync(tenantContext.TenantId, ct);
-        return Ok(users);
+        return Ok(ApiResponse<IReadOnlyList<UserResponse>>.Ok(users));
     }
 }
