@@ -16,6 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.10" />
+    <PackageReference Include="System.Threading.RateLimiting" Version="11.0.0-preview.5.26302.115" />
   </ItemGroup>
 
   <ItemGroup>
