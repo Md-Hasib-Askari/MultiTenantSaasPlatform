@@ -34,6 +34,7 @@ public class TenantResolutionMiddleware(
             path.StartsWith("/health")
             || path.StartsWith("/metrics")
             || path.StartsWith("/openapi")
+            || path.StartsWith("/scalar")
             || path.StartsWith("/api/auth")
             || (path == "/api/tenants" && ctx.Request.Method == "POST")
         )

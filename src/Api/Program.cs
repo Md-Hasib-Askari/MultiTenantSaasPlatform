@@ -23,7 +23,7 @@ using Infrastructure.Tasks;
 using Infrastructure.Tenants;
 using Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using StackExchange.Redis;
+using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -252,10 +252,8 @@ builder.Services.AddDbContext<AppDbContext>(
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
