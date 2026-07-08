@@ -23,8 +23,8 @@ using Infrastructure.Tasks;
 using Infrastructure.Tenants;
 using Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
+using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -253,7 +253,24 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.MapOpenApi();
-app.MapScalarApiReference();
+app.MapScalarApiReference(options =>
+{
+    options
+        .WithTitle("TenantFlow API")
+        .WithTheme(ScalarTheme.Purple)
+        .WithDarkMode(true)
+        .WithDynamicBaseServerUrl(true)
+        .WithHttpBearerAuthentication(bearer =>
+        {
+            bearer.Token = "";
+        })
+        .WithApiKeyAuthentication(apiKey =>
+        {
+            apiKey.Token = "";
+        })
+        .WithDefaultFonts(false)
+        .WithSearchHotKey("s");
+});
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
