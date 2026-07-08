@@ -85,7 +85,13 @@ builder.Services.AddHttpContextAccessor();
 var jwtOpts = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()!;
 var rsa = RSA.Create(2048);
 if (!string.IsNullOrEmpty(jwtOpts.PrivateKey))
-    rsa.ImportFromPem(jwtOpts.PrivateKey);
+{
+    var pem = jwtOpts.PrivateKey;
+    // Support both raw PEM and base64-encoded PEM (for env vars where newlines may not survive)
+    if (!pem.Contains("-----BEGIN", StringComparison.Ordinal))
+        pem = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(pem));
+    rsa.ImportFromPem(pem);
+}
 
 builder.Services.AddSingleton(rsa);
 
